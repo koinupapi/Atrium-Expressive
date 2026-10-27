@@ -1,3 +1,4 @@
+
 import 'package:dynamic_system_colors/dynamic_system_colors.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart' hide CorePalette;
 import 'package:flutter/foundation.dart';
@@ -7,12 +8,11 @@ import 'package:material_color_utilities/material_color_utilities.dart';
 
 import 'design_tokens.dart';
 
-/// Atrium's Material 3 theme.
+/// Atrium Expressive's Material 3 theme.
 ///
-/// On Android 12+ the user's wallpaper-derived palette is used when
-/// available (via `dynamic_system_colors`); otherwise we fall back to a violet seed
-/// that nods to the "atrium" calm-architectural feel. Both light and dark
-/// are derived from the same seed so they stay in sync.
+/// On Android 12+, wallpaper-derived dynamic colors are used when available.
+/// Otherwise, the app falls back to a violet seed color.
+/// Light and dark themes share the same color source.
 abstract final class AtriumTheme {
   /// Fallback seed when dynamic color is unavailable.
   static const Color seed = Color(0xFF6750A4);
@@ -35,6 +35,7 @@ abstract final class AtriumTheme {
 
   static ThemeData _build(ColorScheme scheme, String? fontFamily) {
     final bool isDark = scheme.brightness == Brightness.dark;
+
     final flex = isDark
         ? FlexColorScheme.dark(
             colorScheme: scheme,
@@ -60,6 +61,34 @@ abstract final class AtriumTheme {
 
     return baseTheme.copyWith(
       scaffoldBackgroundColor: resolvedScheme.surface,
+
+      // Material 3 Expressive-inspired pill-shaped buttons.
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          shape: const StadiumBorder(),
+          minimumSize: const Size(64, 48),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          shape: const StadiumBorder(),
+          minimumSize: const Size(64, 48),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          shape: const StadiumBorder(),
+          minimumSize: const Size(64, 48),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          shape: const StadiumBorder(),
+          minimumSize: const Size(48, 48),
+        ),
+      ),
+
+      // Soft, rounded cards.
       cardTheme: CardThemeData(
         elevation: 0,
         clipBehavior: Clip.antiAlias,
@@ -67,9 +96,13 @@ abstract final class AtriumTheme {
         shape: const RoundedRectangleBorder(borderRadius: Radii.card),
         margin: EdgeInsets.zero,
       ),
+
+      // Preserve the existing list layout.
       listTileTheme: const ListTileThemeData(
         contentPadding: EdgeInsets.symmetric(horizontal: Insets.lg),
       ),
+
+      // Rounded, softly filled text fields.
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor:
@@ -79,19 +112,22 @@ abstract final class AtriumTheme {
           borderSide: BorderSide.none,
         ),
       ),
+
+      // Pill-shaped chips.
       chipTheme: ChipThemeData(
         shape: const RoundedRectangleBorder(borderRadius: Radii.chip),
         side: BorderSide.none,
         backgroundColor: resolvedScheme.surfaceContainerHighest,
       ),
+
+      // Floating notifications.
       snackBarTheme: const SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
       ),
     );
   }
 
-  /// Wraps [builder] with the platform dynamic-color palettes when present.
-  /// Use at the app root so both themes get the harmonized schemes.
+  /// Wraps the app with platform dynamic-color palettes when available.
   static Widget withDynamicColor({
     required Widget Function(ColorScheme? light, ColorScheme? dark) builder,
   }) {
@@ -102,11 +138,11 @@ abstract final class AtriumTheme {
   }
 }
 
-/// A custom dynamic color builder that intentionally bypasses `getColorSchemes()`
-/// provided by `dynamic_system_colors` because it queries theme attributes using
-/// the Application context on Android 14+, causing Material You colors to fall back
-/// to non-dynamic system defaults. Instead, it relies directly on `getCorePalette()`,
-/// which uses global resources and works correctly.
+/// Custom dynamic color builder.
+///
+/// Bypasses getColorSchemes() because its Android application-context lookup
+/// can return non-dynamic colors on Android 14+.
+/// Uses getCorePalette() directly instead.
 class _AtriumDynamicColorBuilder extends StatefulWidget {
   const _AtriumDynamicColorBuilder({required this.builder});
 
@@ -133,6 +169,7 @@ class _AtriumDynamicColorBuilderState
       // ignore: deprecated_member_use
       final CorePalette? corePalette =
           await DynamicColorPlugin.getCorePalette();
+
       if (!mounted) return;
 
       if (corePalette != null) {
@@ -141,6 +178,7 @@ class _AtriumDynamicColorBuilderState
             'dynamic_color: Core palette detected (bypassed schemes).',
           );
         }
+
         setState(() {
           _light = corePalette.toColorScheme();
           _dark = corePalette.toColorScheme(brightness: Brightness.dark);
@@ -159,16 +197,16 @@ class _AtriumDynamicColorBuilderState
 
     try {
       final Color? accentColor = await DynamicColorPlugin.getAccentColor();
+
       if (!mounted) return;
 
       if (accentColor != null) {
         if (kDebugMode) {
           debugPrint('dynamic_color: Accent color detected.');
         }
+
         setState(() {
-          _light = ColorScheme.fromSeed(
-            seedColor: accentColor,
-          );
+          _light = ColorScheme.fromSeed(seedColor: accentColor);
           _dark = ColorScheme.fromSeed(
             seedColor: accentColor,
             brightness: Brightness.dark,
@@ -181,8 +219,6 @@ class _AtriumDynamicColorBuilderState
         debugPrint('dynamic_color: Failed to obtain accent color. $e');
       }
     } on MissingPluginException catch (e) {
-      // Android without desktop accent support reports notImplemented, which
-      // surfaces here rather than as a PlatformException. Keep the seed theme.
       if (kDebugMode) {
         debugPrint('dynamic_color: Accent color channel unavailable. $e');
       }
