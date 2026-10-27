@@ -125,7 +125,7 @@ class DashboardBoard extends ConsumerWidget {
                         Text(
                           'Your stack at a glance',
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: colors.onSurfaceVariant,
+                            color: theme.colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
