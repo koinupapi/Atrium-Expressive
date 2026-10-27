@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../design_tokens.dart';
+import 'expressive_surface.dart';
 
 /// A reusable expandable box for displaying an overview or synopsis.
 class OverviewBox extends StatefulWidget {
@@ -53,13 +54,7 @@ class _OverviewBoxState extends State<OverviewBox> {
       height: 1.5,
     );
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(Insets.lg),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(Radii.lg),
-      ),
+    return ExpressiveSurface(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
