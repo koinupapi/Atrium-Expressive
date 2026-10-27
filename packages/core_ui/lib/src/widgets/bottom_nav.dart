@@ -1,5 +1,25 @@
 import 'package:flutter/material.dart';
 
+import '../design_tokens.dart';
+
+/// Theme extension lets every service use the same navigation preference
+/// without depending on the app's preferences or storage implementation.
+@immutable
+class AtriumNavigationStyle extends ThemeExtension<AtriumNavigationStyle> {
+  const AtriumNavigationStyle({this.floating = false});
+
+  final bool floating;
+
+  @override
+  AtriumNavigationStyle copyWith({bool? floating}) =>
+      AtriumNavigationStyle(floating: floating ?? this.floating);
+
+  @override
+  AtriumNavigationStyle lerp(ThemeExtension<AtriumNavigationStyle>? other, double t) =>
+      t < 0.5 ? this : (other ?? this) as AtriumNavigationStyle;
+}
+
+
 /// The bottom navigation bar every screen with tabs uses.
 ///
 /// Material's [NavigationBar] wraps itself in a SafeArea and *then* sizes to
@@ -42,6 +62,8 @@ class AtriumBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool floating =
+        Theme.of(context).extension<AtriumNavigationStyle>()?.floating ?? false;
     final double height = heightFor(context);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -52,10 +74,20 @@ class AtriumBottomNav extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         child: SizedBox(
           height: height,
-          child: NavigationBar(
-            selectedIndex: selectedIndex,
-            onDestinationSelected: onDestinationSelected,
-            destinations: destinations,
+          child: Padding(
+            padding: floating
+                ? const EdgeInsets.symmetric(horizontal: Insets.md, vertical: Insets.xs)
+                : EdgeInsets.zero,
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: floating ? Radii.chip : BorderRadius.zero,
+              clipBehavior: floating ? Clip.antiAlias : Clip.none,
+              child: NavigationBar(
+                selectedIndex: selectedIndex,
+                onDestinationSelected: onDestinationSelected,
+                destinations: destinations,
+              ),
+            ),
           ),
         ),
       ),
