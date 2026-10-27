@@ -48,7 +48,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "app.atrium"
+        applicationId = "app.atrium.expressive"
         // local_auth + flutter_secure_storage need API 23+ (BiometricPrompt,
         // EncryptedSharedPreferences). Floor at 23 regardless of Flutter's
         // default.
