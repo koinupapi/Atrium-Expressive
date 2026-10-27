@@ -20,13 +20,16 @@ abstract final class Insets {
   static const EdgeInsets pageH = EdgeInsets.symmetric(horizontal: lg);
 }
 
+
 abstract final class Radii {
-  static const double sm = 8;
-  static const double md = 12;
-  static const double lg = 16;
+  // Material 3 Expressive-inspired corner radius scale.
+  static const double sm = 12;
+  static const double md = 16;
+  static const double lg = 24;
   static const double xl = 28;
 
-  static const BorderRadius card = BorderRadius.all(Radius.circular(md));
+  // Larger, softer card corners.
+  static const BorderRadius card = BorderRadius.all(Radius.circular(lg));
   static const BorderRadius chip = BorderRadius.all(Radius.circular(xl));
 }
 
