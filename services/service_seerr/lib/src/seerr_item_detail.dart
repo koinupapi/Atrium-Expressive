@@ -780,6 +780,10 @@ class _RequestButtonState extends ConsumerState<_RequestButton> {
       useRootNavigator: true,
       isScrollControlled: true,
       showDragHandle: true,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      ),
       builder: (_) =>
           _RequestOptionsSheet(instance: widget.instance, item: widget.item),
     );
@@ -933,42 +937,117 @@ class _RequestOptionsSheetState extends ConsumerState<_RequestOptionsSheet> {
       seerrServersProvider((instance: widget.instance, mediaType: _mediaType)),
     );
 
+    final ColorScheme cs = theme.colorScheme;
     return SafeArea(
+      top: false,
       child: Padding(
         padding: EdgeInsets.only(
-          left: Insets.lg,
-          right: Insets.lg,
-          bottom: MediaQuery.of(context).viewInsets.bottom + Insets.lg,
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Text(
-              'Request',
-              style: theme.textTheme.labelMedium
-                  ?.copyWith(color: theme.colorScheme.outline),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.82,
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(
+              Insets.lg, Insets.sm, Insets.lg, Insets.xl,
             ),
-            const SizedBox(height: 2),
-            Text(widget.item.displayTitle, style: theme.textTheme.titleLarge),
-            const SizedBox(height: Insets.lg),
-            serversAsync.when(
-              loading: () => const Padding(
-                padding: EdgeInsets.all(Insets.lg),
-                child: Center(child: ExpressiveProgressIndicator()),
-              ),
-              error: (Object e, _) => _fallback(
-                'Advanced options are unavailable. You can still request using '
-                'the server defaults.',
-              ),
-              data: (List<SeerrServer> servers) => servers.isEmpty
-                  ? _fallback(
-                      'No ${_mediaType == 'tv' ? 'Sonarr' : 'Radarr'} server is '
-                      'configured; requesting will use Seerr defaults.',
-                    )
-                  : _options(servers),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: cs.primaryContainer,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Icon(
+                        widget.item.isMovie
+                            ? Icons.movie_creation_rounded
+                            : Icons.live_tv_rounded,
+                        size: 28,
+                        color: cs.onPrimaryContainer,
+                      ),
+                    ),
+                    const SizedBox(width: Insets.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            widget.item.isMovie
+                                ? 'REQUEST MOVIE'
+                                : 'REQUEST SERIES',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: cs.primary,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: Insets.xs),
+                          Text(
+                            widget.item.displayTitle,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: Insets.lg),
+                Container(
+                  padding: const EdgeInsets.all(Insets.lg),
+                  decoration: BoxDecoration(
+                    color: cs.surfaceContainerHigh,
+                    borderRadius: Radii.card,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          Icon(Icons.tune_rounded, color: cs.primary),
+                          const SizedBox(width: Insets.sm),
+                          Text(
+                            'Request options',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: Insets.md),
+                      serversAsync.when(
+                        loading: () => const Padding(
+                          padding: EdgeInsets.all(Insets.lg),
+                          child: Center(child: ExpressiveProgressIndicator()),
+                        ),
+                        error: (Object e, _) => _fallback(
+                          'Advanced options are unavailable. You can still request using '
+                          'the server defaults.',
+                        ),
+                        data: (List<SeerrServer> servers) => servers.isEmpty
+                            ? _fallback(
+                                'No ${_mediaType == 'tv' ? 'Sonarr' : 'Radarr'} server is '
+                                'configured; requesting will use Seerr defaults.',
+                              )
+                            : _options(servers),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -1006,7 +1085,10 @@ class _RequestOptionsSheetState extends ConsumerState<_RequestOptionsSheet> {
         if (has4k && hasStandard) ...<Widget>[
           SwitchListTile(
             value: is4k,
-            contentPadding: EdgeInsets.zero,
+            contentPadding: const EdgeInsets.symmetric(horizontal: Insets.sm),
+            shape: RoundedRectangleBorder(borderRadius: Radii.md),
+            tileColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+            secondary: const Icon(Icons.high_quality_rounded),
             title: const Text('Request in 4K'),
             onChanged: (bool v) => setState(() {
               _is4k = v;
@@ -1022,9 +1104,10 @@ class _RequestOptionsSheetState extends ConsumerState<_RequestOptionsSheet> {
             // Re-key per pool so the 4K toggle reseeds the initial value.
             key: ValueKey<String>('server-$is4k'),
             initialValue: serverId,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Server',
-              border: OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.dns_rounded),
+              border: OutlineInputBorder(borderRadius: Radii.md),
             ),
             items: pool
                 .map(
@@ -1104,9 +1187,10 @@ class _RequestOptionsSheetState extends ConsumerState<_RequestOptionsSheet> {
             // Re-key per server so a server switch reseeds the initial value.
             key: ValueKey<String>('profile-$serverId'),
             initialValue: profileId,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Quality profile',
-              border: OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.high_quality_rounded),
+              border: OutlineInputBorder(borderRadius: Radii.md),
             ),
             items: profiles
                 .map(
@@ -1124,9 +1208,10 @@ class _RequestOptionsSheetState extends ConsumerState<_RequestOptionsSheet> {
             key: ValueKey<String>('root-$serverId'),
             initialValue: rootFolder,
             isExpanded: true,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Root folder',
-              border: OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.folder_outlined),
+              border: OutlineInputBorder(borderRadius: Radii.md),
             ),
             items: roots
                 .map(
@@ -1173,7 +1258,13 @@ class _RequestOptionsSheetState extends ConsumerState<_RequestOptionsSheet> {
   }
 
   Widget _submitButton(String label, VoidCallback onPressed) {
-    return FilledButton.icon(
+    return SizedBox(
+      height: 56,
+      child: FilledButton.icon(
+      style: FilledButton.styleFrom(
+        shape: const StadiumBorder(),
+        textStyle: const TextStyle(fontWeight: FontWeight.w700),
+      ),
       onPressed: _submitting ? null : onPressed,
       icon: _submitting
           ? const SizedBox(
@@ -1183,6 +1274,7 @@ class _RequestOptionsSheetState extends ConsumerState<_RequestOptionsSheet> {
             )
           : const Icon(Icons.add_to_queue),
       label: Text(label),
+      ),
     );
   }
 }
