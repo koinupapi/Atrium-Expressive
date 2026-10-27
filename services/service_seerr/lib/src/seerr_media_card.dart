@@ -39,7 +39,7 @@ class SeerrMediaCard extends StatelessWidget {
           Expanded(
             child: Material(
               color: theme.colorScheme.surfaceContainerHigh,
-              borderRadius: BorderRadius.circular(Radii.lg),
+              borderRadius: Radii.card,
               clipBehavior: Clip.antiAlias,
               child: InkWell(
                 onTap: onTap,
@@ -118,7 +118,7 @@ class _RatingBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: Radii.chip,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -152,7 +152,7 @@ class SeerrInfoPill extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: Radii.chip,
       ),
       child: Text(label, style: theme.textTheme.labelMedium),
     );
@@ -212,7 +212,7 @@ class SeerrRequestCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: cs.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: Radii.card,
       ),
       clipBehavior: Clip.antiAlias,
       child: Stack(
