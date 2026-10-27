@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'preferences.dart';
 import 'screens/activity_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/instance_form_screen.dart';
@@ -79,8 +80,13 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
           builder: (BuildContext context, WidgetRef ref, Widget? child) {
             final List<Instance> instances = ref.watch(activeInstancesProvider);
             final Profile? profile = ref.watch(activeProfileProvider);
+            final bool floatingNavigation = ref.watch(
+              preferencesProvider.select((Preferences p) =>
+                  p.bottomNavStyle == BottomNavStyle.floating),
+            );
             return ScaffoldWithNavBar(
               navigationShell: shell,
+              floatingNavigation: floatingNavigation,
               drawer: ServicesDrawer(instances: instances, profile: profile),
             );
           },
