@@ -83,11 +83,11 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
           : null,
       bottomNavigationBar: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        height: _isNavbarVisible ? 80.0 : 0.0,
+        height: _isNavbarVisible ? (widget.floatingNavigation ? 88.0 : 80.0) : 0.0,
         child: SingleChildScrollView(
           physics: const NeverScrollableScrollPhysics(),
           child: SizedBox(
-            height: 80.0,
+            height: widget.floatingNavigation ? 88.0 : 80.0,
             child: Padding(
               padding: widget.floatingNavigation
                   ? const EdgeInsets.symmetric(horizontal: 12, vertical: 4)
