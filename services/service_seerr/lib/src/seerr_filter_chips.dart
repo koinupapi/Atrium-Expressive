@@ -19,8 +19,9 @@ class SeerrFilterChips<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     return SizedBox(
-      height: 52,
+      height: 60,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         padding: Insets.pageH,
@@ -31,6 +32,21 @@ class SeerrFilterChips<T> extends StatelessWidget {
               FilterChip(
                 label: Text(label(value)),
                 selected: value == selected,
+                showCheckmark: true,
+                avatar: null,
+                backgroundColor: colors.surfaceContainerLow,
+                selectedColor: colors.secondaryContainer,
+                checkmarkColor: colors.onSecondaryContainer,
+                side: BorderSide.none,
+                shape: const StadiumBorder(),
+                labelStyle: TextStyle(
+                  fontWeight: value == selected
+                      ? FontWeight.w700
+                      : FontWeight.w500,
+                  color: value == selected
+                      ? colors.onSecondaryContainer
+                      : colors.onSurfaceVariant,
+                ),
                 onSelected: (_) => onSelected(value),
               ),
           ],
