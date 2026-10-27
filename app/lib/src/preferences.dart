@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_ce/hive.dart';
 
+enum BottomNavStyle { standard, floating }
+
 enum ThemeSource {
   system,
   preset,
@@ -24,6 +26,7 @@ enum PaletteStyle {
 class Preferences {
   const Preferences({
     this.themeMode = ThemeMode.system,
+    this.bottomNavStyle = BottomNavStyle.standard,
     this.biometricEnabled = false,
     this.fontFamily,
     this.themeSource = ThemeSource.system,
@@ -36,6 +39,7 @@ class Preferences {
   });
 
   final ThemeMode themeMode;
+  final BottomNavStyle bottomNavStyle;
   final bool biometricEnabled;
   final String? fontFamily;
   final ThemeSource themeSource;
@@ -53,6 +57,7 @@ class Preferences {
 
   Preferences copyWith({
     ThemeMode? themeMode,
+    BottomNavStyle? bottomNavStyle,
     bool? biometricEnabled,
     String? Function()? fontFamily,
     ThemeSource? themeSource,
@@ -65,6 +70,7 @@ class Preferences {
   }) =>
       Preferences(
         themeMode: themeMode ?? this.themeMode,
+        bottomNavStyle: bottomNavStyle ?? this.bottomNavStyle,
         biometricEnabled: biometricEnabled ?? this.biometricEnabled,
         fontFamily: fontFamily != null ? fontFamily() : this.fontFamily,
         themeSource: themeSource ?? this.themeSource,
@@ -97,6 +103,7 @@ final NotifierProvider<PreferencesController, Preferences> preferencesProvider =
 
 class PreferencesController extends Notifier<Preferences> {
   static const String _themeKey = 'pref.themeMode';
+  static const String _bottomNavStyleKey = 'pref.bottomNavStyle';
   static const String _biometricKey = 'pref.biometricEnabled';
   static const String _fontFamilyKey = 'pref.fontFamily';
   static const String _themeSourceKey = 'pref.themeSource';
@@ -118,6 +125,9 @@ class PreferencesController extends Notifier<Preferences> {
         'dark' => ThemeMode.dark,
         _ => ThemeMode.system,
       },
+      bottomNavStyle: _box.get(_bottomNavStyleKey) == 'floating'
+          ? BottomNavStyle.floating
+          : BottomNavStyle.standard,
       biometricEnabled: _box.get(_biometricKey) == 'true',
       fontFamily: _box.get(_fontFamilyKey),
       themeSource: switch (_box.get(_themeSourceKey)) {
@@ -153,6 +163,11 @@ class PreferencesController extends Notifier<Preferences> {
   Future<void> setCalendarShowUnmonitored(bool show) async {
     await _box.put(_calendarShowUnmonitoredKey, '$show');
     state = state.copyWith(calendarShowUnmonitored: show);
+  }
+
+  Future<void> setBottomNavStyle(BottomNavStyle style) async {
+    await _box.put(_bottomNavStyleKey, style.name);
+    state = state.copyWith(bottomNavStyle: style);
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {
