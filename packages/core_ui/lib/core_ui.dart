@@ -25,6 +25,7 @@ export 'src/widgets/easy_refresh_wrapper.dart';
 export 'src/widgets/expandable_fab.dart';
 export 'src/widgets/expressive_progress_indicator.dart';
 export 'src/widgets/expressive_slider.dart';
+export 'src/widgets/expressive_surface.dart';
 export 'src/widgets/overview_box.dart';
 export 'src/widgets/service_tile.dart';
 export 'src/widgets/state_views.dart';
