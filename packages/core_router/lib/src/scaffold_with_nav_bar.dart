@@ -10,11 +10,13 @@ class ScaffoldWithNavBar extends StatefulWidget {
   const ScaffoldWithNavBar({
     required this.navigationShell,
     this.drawer,
+    this.floatingNavigation = false,
     super.key,
   });
 
   final StatefulNavigationShell navigationShell;
   final Widget? drawer;
+  final bool floatingNavigation;
 
   @override
   State<ScaffoldWithNavBar> createState() => _ScaffoldWithNavBarState();
@@ -86,7 +88,19 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
           physics: const NeverScrollableScrollPhysics(),
           child: SizedBox(
             height: 80.0,
-            child: NavigationBar(
+            child: Padding(
+              padding: widget.floatingNavigation
+                  ? const EdgeInsets.symmetric(horizontal: 12, vertical: 4)
+                  : EdgeInsets.zero,
+              child: Material(
+                color: Colors.transparent,
+                borderRadius: widget.floatingNavigation
+                    ? BorderRadius.circular(40)
+                    : BorderRadius.zero,
+                clipBehavior: widget.floatingNavigation
+                    ? Clip.antiAlias
+                    : Clip.none,
+                child: NavigationBar(
               selectedIndex: widget.navigationShell.currentIndex,
               onDestinationSelected: _onTap,
               destinations: const <NavigationDestination>[
@@ -111,6 +125,8 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
                   label: 'Settings',
                 ),
               ],
+                ),
+              ),
             ),
           ),
         ),
