@@ -98,10 +98,56 @@ class DashboardBoard extends ConsumerWidget {
       onRefresh: () async => _refreshAll(ref, instances),
       child: ListView.separated(
         padding: Insets.page,
-        itemCount: visible.length,
+        itemCount: visible.length + 1,
         separatorBuilder: (_, __) => const SizedBox(height: Insets.md),
-        itemBuilder: (BuildContext context, int index) => _KeepAliveWrapper(
-            child: _buildWidget(visible[index].kind, instances)),
+        itemBuilder: (BuildContext context, int index) {
+          if (index == 0) {
+            final ThemeData theme = Theme.of(context);
+            final ColorScheme colors = theme.colorScheme;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: Insets.sm),
+              child: Row(
+                children: <Widget>[
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: colors.primaryContainer,
+                      borderRadius: BorderRadius.circular(Radii.lg),
+                    ),
+                    child: Icon(
+                      Icons.dashboard_customize_rounded,
+                      color: colors.onPrimaryContainer,
+                    ),
+                  ),
+                  const SizedBox(width: Insets.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          'Overview',
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          'Your stack at a glance',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+          return _KeepAliveWrapper(
+            child: _buildWidget(visible[index - 1].kind, instances),
+          );
+        },
       ),
     );
   }
