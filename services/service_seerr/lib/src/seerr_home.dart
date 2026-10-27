@@ -28,12 +28,37 @@ class SeerrHome extends StatelessWidget {
       length: 3,
       child: Column(
         children: <Widget>[
-          const TabBar(
-            tabs: <Widget>[
-              Tab(text: 'Requests', icon: Icon(Icons.playlist_play)),
-              Tab(text: 'Discover', icon: Icon(Icons.explore_outlined)),
-              Tab(text: 'Issues', icon: Icon(Icons.report_problem_outlined)),
-            ],
+          Builder(
+            builder: (BuildContext context) {
+              final ColorScheme colors = Theme.of(context).colorScheme;
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Insets.md,
+                  vertical: Insets.sm,
+                ),
+                child: Material(
+                  color: colors.surfaceContainerLow,
+                  borderRadius: Radii.card,
+                  clipBehavior: Clip.antiAlias,
+                  child: TabBar(
+                    dividerHeight: 0,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    indicator: BoxDecoration(
+                      color: colors.secondaryContainer,
+                      borderRadius: Radii.card,
+                    ),
+                    labelColor: colors.onSecondaryContainer,
+                    unselectedLabelColor: colors.onSurfaceVariant,
+                    labelStyle: const TextStyle(fontWeight: FontWeight.w700),
+                    tabs: const <Widget>[
+                      Tab(text: 'Requests', icon: Icon(Icons.playlist_play)),
+                      Tab(text: 'Discover', icon: Icon(Icons.explore_outlined)),
+                      Tab(text: 'Issues', icon: Icon(Icons.report_problem_outlined)),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
           Expanded(
             child: TabBarView(
