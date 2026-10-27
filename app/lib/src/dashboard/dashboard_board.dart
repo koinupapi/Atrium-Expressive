@@ -103,22 +103,13 @@ class DashboardBoard extends ConsumerWidget {
         itemBuilder: (BuildContext context, int index) {
           if (index == 0) {
             final ThemeData theme = Theme.of(context);
-            final ColorScheme colors = theme.colorScheme;
             return Padding(
               padding: const EdgeInsets.only(bottom: Insets.sm),
               child: Row(
                 children: <Widget>[
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: colors.primaryContainer,
-                      borderRadius: BorderRadius.circular(Radii.lg),
-                    ),
-                    child: Icon(
-                      Icons.dashboard_customize_rounded,
-                      color: colors.onPrimaryContainer,
-                    ),
+                  ExpressiveIconBadge(
+                    icon: Icons.dashboard_customize_rounded,
+                    size: 48,
                   ),
                   const SizedBox(width: Insets.md),
                   Expanded(
@@ -506,26 +497,18 @@ class _EditTile extends StatelessWidget {
       instances,
       wolDeviceCount: wolDeviceCount,
     );
-    return Container(
+    return ExpressiveSurface(
       padding: const EdgeInsets.symmetric(
         horizontal: Insets.md,
         vertical: Insets.sm,
       ),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(16),
-      ),
       child: Row(
         children: <Widget>[
-          Container(
-            width: 36,
-            height: 36,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: cs.primary.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(config.kind.icon, size: 20, color: cs.primary),
+          ExpressiveIconBadge(
+            icon: config.kind.icon,
+            accent: cs.primary,
+            size: 36,
+            iconSize: 20,
           ),
           const SizedBox(width: Insets.md),
           Expanded(
