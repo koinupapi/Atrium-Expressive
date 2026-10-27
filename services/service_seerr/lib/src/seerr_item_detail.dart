@@ -1086,7 +1086,7 @@ class _RequestOptionsSheetState extends ConsumerState<_RequestOptionsSheet> {
           SwitchListTile(
             value: is4k,
             contentPadding: const EdgeInsets.symmetric(horizontal: Insets.sm),
-            shape: RoundedRectangleBorder(borderRadius: Radii.md),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Radii.md)),
             tileColor: Theme.of(context).colorScheme.surfaceContainerHighest,
             secondary: const Icon(Icons.high_quality_rounded),
             title: const Text('Request in 4K'),
