@@ -1107,7 +1107,7 @@ class _RequestOptionsSheetState extends ConsumerState<_RequestOptionsSheet> {
             decoration: InputDecoration(
               labelText: 'Server',
               prefixIcon: const Icon(Icons.dns_rounded),
-              border: OutlineInputBorder(borderRadius: Radii.md),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(Radii.md)),
             ),
             items: pool
                 .map(
@@ -1190,7 +1190,7 @@ class _RequestOptionsSheetState extends ConsumerState<_RequestOptionsSheet> {
             decoration: InputDecoration(
               labelText: 'Quality profile',
               prefixIcon: const Icon(Icons.high_quality_rounded),
-              border: OutlineInputBorder(borderRadius: Radii.md),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(Radii.md)),
             ),
             items: profiles
                 .map(
@@ -1211,7 +1211,7 @@ class _RequestOptionsSheetState extends ConsumerState<_RequestOptionsSheet> {
             decoration: InputDecoration(
               labelText: 'Root folder',
               prefixIcon: const Icon(Icons.folder_outlined),
-              border: OutlineInputBorder(borderRadius: Radii.md),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(Radii.md)),
             ),
             items: roots
                 .map(
