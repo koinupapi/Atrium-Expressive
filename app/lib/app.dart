@@ -26,6 +26,9 @@ class AtriumApp extends ConsumerWidget {
     final String? fontFamily =
         ref.watch(preferencesProvider.select((Preferences p) => p.fontFamily));
     final GoRouter router = ref.watch(routerProvider);
+    final BottomNavStyle bottomNavStyle = ref.watch(
+      preferencesProvider.select((Preferences p) => p.bottomNavStyle),
+    );
 
     // Mirror the active profile's global headers into the networking layer
     // so every instance request carries them. Writes are guarded by a map
@@ -82,10 +85,18 @@ class AtriumApp extends ConsumerWidget {
                     seedColor: AtriumTheme.seed, brightness: Brightness.dark))
             : customDark;
 
-        final ThemeData lightTheme =
-            AtriumTheme.light(activeLight, fontFamily: fontFamily);
-        final ThemeData darkTheme =
-            AtriumTheme.dark(activeDark, fontFamily: fontFamily);
+        final ThemeData lightTheme = AtriumTheme.light(
+          activeLight,
+          fontFamily: fontFamily,
+        ).copyWith(extensions: <ThemeExtension<dynamic>>[
+          AtriumNavigationStyle(floating: bottomNavStyle == BottomNavStyle.floating),
+        ]);
+        final ThemeData darkTheme = AtriumTheme.dark(
+          activeDark,
+          fontFamily: fontFamily,
+        ).copyWith(extensions: <ThemeExtension<dynamic>>[
+          AtriumNavigationStyle(floating: bottomNavStyle == BottomNavStyle.floating),
+        ]);
 
         return MaterialApp.router(
           title: 'Atrium',
