@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../design_tokens.dart';
 import '../service_visuals.dart';
 import 'beta_badge.dart';
+import 'expressive_surface.dart';
 import 'status_chip.dart';
 
 /// A list tile representing one configured [Instance]: service icon badge,
@@ -32,14 +33,10 @@ class ServiceTile extends StatelessWidget {
     final Color accent = ServiceVisuals.accent(instance.kind);
     return Card(
       child: ListTile(
-        leading: Container(
-          width: Sizes.serviceBadge,
-          height: Sizes.serviceBadge,
-          decoration: BoxDecoration(
-            color: accent.withValues(alpha: 0.18),
-            borderRadius: BorderRadius.circular(Radii.sm),
-          ),
-          child: Icon(ServiceVisuals.icon(instance.kind), color: accent),
+        leading: ExpressiveIconBadge(
+          icon: ServiceVisuals.icon(instance.kind),
+          accent: accent,
+          size: Sizes.serviceBadge,
         ),
         title: Row(
           children: <Widget>[
