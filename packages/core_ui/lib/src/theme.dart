@@ -40,7 +40,7 @@ abstract final class AtriumTheme {
             colorScheme: scheme,
             fontFamily: fontFamily,
             subThemesData: const FlexSubThemesData(
-              defaultRadius: 12.0,
+              defaultRadius: 20.0,
               inputDecoratorIsFilled: false,
               inputDecoratorBorderType: FlexInputBorderType.outline,
             ),
@@ -49,7 +49,7 @@ abstract final class AtriumTheme {
             colorScheme: scheme,
             fontFamily: fontFamily,
             subThemesData: const FlexSubThemesData(
-              defaultRadius: 12.0,
+              defaultRadius: 20.0,
               inputDecoratorIsFilled: false,
               inputDecoratorBorderType: FlexInputBorderType.outline,
             ),
