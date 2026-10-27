@@ -31,47 +31,30 @@ class DashboardWidgetCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme cs = theme.colorScheme;
-    return Material(
-      color: cs.surfaceContainerHigh,
-      borderRadius: BorderRadius.circular(28),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(Insets.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return ExpressiveSurface(
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
             children: <Widget>[
-              Row(
-                children: <Widget>[
-                  Container(
-                    width: 44,
-                    height: 44,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: accent.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Icon(kind.icon, size: 24, color: accent),
+              ExpressiveIconBadge(icon: kind.icon, accent: accent),
+              const SizedBox(width: Insets.md),
+              Expanded(
+                child: Text(
+                  kind.label,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: cs.onSurface,
                   ),
-                  const SizedBox(width: Insets.md),
-                  Expanded(
-                    child: Text(
-                      kind.label,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: cs.onSurface,
-                      ),
-                    ),
-                  ),
-                  if (trailing != null) trailing!,
-                ],
+                ),
               ),
-              const SizedBox(height: Insets.md),
-              child,
+              if (trailing != null) trailing!,
             ],
           ),
-        ),
+          const SizedBox(height: Insets.md),
+          child,
+        ],
       ),
     );
   }
