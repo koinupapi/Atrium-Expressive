@@ -82,6 +82,28 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           const Divider(),
+          const _SectionHeader('Bottom navigation'),
+          RadioGroup<BottomNavStyle>(
+            groupValue: prefs.bottomNavStyle,
+            onChanged: (BottomNavStyle? style) {
+              if (style != null) controller.setBottomNavStyle(style);
+            },
+            child: const Column(
+              children: <Widget>[
+                RadioListTile<BottomNavStyle>(
+                  value: BottomNavStyle.standard,
+                  title: Text('Standard'),
+                  subtitle: Text('Full-width bottom navigation bar'),
+                ),
+                RadioListTile<BottomNavStyle>(
+                  value: BottomNavStyle.floating,
+                  title: Text('Floating pill'),
+                  subtitle: Text('Rounded bar with space around its edges'),
+                ),
+              ],
+            ),
+          ),
+          const Divider(),
           const _SectionHeader('Theme Styling'),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: Insets.lg),
