@@ -62,6 +62,25 @@ abstract final class AtriumTheme {
     return baseTheme.copyWith(
       scaffoldBackgroundColor: resolvedScheme.surface,
 
+      // A stronger expressive navigation selection, shared by the app shell
+      // and every service tab bar that uses Material NavigationBar.
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: resolvedScheme.surfaceContainer,
+        indicatorColor: resolvedScheme.primaryContainer,
+        indicatorShape: const StadiumBorder(),
+        elevation: 0,
+        labelTextStyle: WidgetStateProperty.resolveWith<TextStyle?>(
+          (Set<WidgetState> states) => TextStyle(
+            fontWeight: states.contains(WidgetState.selected)
+                ? FontWeight.w700
+                : FontWeight.w500,
+            color: states.contains(WidgetState.selected)
+                ? resolvedScheme.onSurface
+                : resolvedScheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+
       // Material 3 Expressive-inspired pill-shaped buttons.
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
