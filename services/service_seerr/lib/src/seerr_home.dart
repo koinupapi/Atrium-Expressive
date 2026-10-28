@@ -147,7 +147,7 @@ class _SeerrRequestsTabState extends ConsumerState<_SeerrRequestsTab>
                         ],
                       )
                     : ListView.separated(
-                        padding: Insets.page,
+                        padding: const EdgeInsets.fromLTRB(Insets.lg, Insets.lg, Insets.lg, 112),
                         itemCount: list.length,
                         separatorBuilder: (_, __) =>
                             const SizedBox(height: Insets.md),
