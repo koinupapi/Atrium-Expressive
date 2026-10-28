@@ -96,7 +96,7 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
                   selectedIndex: widget.navigationShell.currentIndex,
                   onSelected: _onTap,
                   destinations: const <ExpressiveDestination>[
-                    ExpressiveDestination(icon: Icons.dashboard_outlined, label: 'Dashboard'),
+                    ExpressiveDestination(icon: Icons.dashboard_outlined, label: 'Dash'),
                     ExpressiveDestination(icon: Icons.calendar_today_outlined, label: 'Calendar'),
                     ExpressiveDestination(icon: Icons.swap_vert_outlined, label: 'Activity'),
                     ExpressiveDestination(icon: Icons.settings_outlined, label: 'Settings'),
