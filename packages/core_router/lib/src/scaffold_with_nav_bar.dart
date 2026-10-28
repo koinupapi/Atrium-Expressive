@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:core_ui/core_ui.dart';
 import 'package:go_router/go_router.dart';
 
 /// The bottom-navigation shell that hosts the four top-level branches.
@@ -81,61 +82,28 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
       drawerEdgeDragWidth: widget.drawer != null
           ? MediaQuery.sizeOf(context).width * 0.15
           : null,
-      bottomNavigationBar: AnimatedContainer(
+      bottomNavigationBar: AnimatedSize(
         duration: const Duration(milliseconds: 200),
-        height: _isNavbarVisible ? (widget.floatingNavigation ? 88.0 : 80.0) : 0.0,
-        child: SingleChildScrollView(
-          physics: const NeverScrollableScrollPhysics(),
-          child: SizedBox(
-            height: widget.floatingNavigation ? 88.0 : 80.0,
-            child: Padding(
-              padding: widget.floatingNavigation
-                  ? const EdgeInsets.symmetric(horizontal: 12, vertical: 4)
-                  : EdgeInsets.zero,
-              child: Padding(
-                // Keep the first and last labels clear of the pill's curved ends.
-                padding: widget.floatingNavigation
-                    ? const EdgeInsets.symmetric(horizontal: 6)
-                    : EdgeInsets.zero,
-                child: Material(
-                color: Colors.transparent,
-                borderRadius: widget.floatingNavigation
-                    ? BorderRadius.circular(40)
-                    : BorderRadius.zero,
-                clipBehavior: widget.floatingNavigation
-                    ? Clip.antiAlias
-                    : Clip.none,
-                child: NavigationBar(
-              selectedIndex: widget.navigationShell.currentIndex,
-              onDestinationSelected: _onTap,
-              destinations: const <NavigationDestination>[
-                NavigationDestination(
-                  icon: Icon(Icons.dashboard_outlined),
-                  selectedIcon: Icon(Icons.dashboard),
-                  label: 'Dashboard',
+        alignment: Alignment.topCenter,
+        child: _isNavbarVisible
+            ? Theme(
+                data: Theme.of(context).copyWith(
+                  extensions: <ThemeExtension<dynamic>>[
+                    AtriumNavigationStyle(floating: widget.floatingNavigation),
+                  ],
                 ),
-                NavigationDestination(
-                  icon: Icon(Icons.calendar_today_outlined),
-                  selectedIcon: Icon(Icons.calendar_today),
-                  label: 'Calendar',
+                child: ExpressiveDestinationBar(
+                  selectedIndex: widget.navigationShell.currentIndex,
+                  onSelected: _onTap,
+                  destinations: const <ExpressiveDestination>[
+                    ExpressiveDestination(icon: Icons.dashboard_outlined, label: 'Dashboard'),
+                    ExpressiveDestination(icon: Icons.calendar_today_outlined, label: 'Calendar'),
+                    ExpressiveDestination(icon: Icons.swap_vert_outlined, label: 'Activity'),
+                    ExpressiveDestination(icon: Icons.settings_outlined, label: 'Settings'),
+                  ],
                 ),
-                NavigationDestination(
-                  icon: Icon(Icons.swap_vert_outlined),
-                  selectedIcon: Icon(Icons.swap_vert),
-                  label: 'Activity',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.settings_outlined),
-                  selectedIcon: Icon(Icons.settings),
-                  label: 'Settings',
-                ),
-              ],
-                ),
-                ),
-              ),
-            ),
-          ),
-        ),
+              )
+            : const SizedBox.shrink(),
       ),
     ),);
   }
