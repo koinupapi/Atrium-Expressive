@@ -39,40 +39,18 @@ class SeerrHome extends StatelessWidget {
           ),
           Builder(
             builder: (BuildContext context) {
-              final ColorScheme colors = Theme.of(context).colorScheme;
-              final bool floating =
-                  Theme.of(context).extension<AtriumNavigationStyle>()?.floating ??
-                      false;
-              return SafeArea(
-                top: false,
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    floating ? Insets.md : 0,
-                    floating ? Insets.sm : 0,
-                    floating ? Insets.md : 0,
-                    floating ? Insets.sm : 0,
-                  ),
-                  child: Material(
-                    color: colors.surfaceContainerLow,
-                    borderRadius: floating ? Radii.chip : BorderRadius.zero,
-                    clipBehavior: floating ? Clip.antiAlias : Clip.none,
-                    child: TabBar(
-                      dividerHeight: 0,
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      indicator: BoxDecoration(
-                        color: colors.secondaryContainer,
-                        borderRadius: Radii.chip,
-                      ),
-                      labelColor: colors.onSecondaryContainer,
-                      unselectedLabelColor: colors.onSurfaceVariant,
-                      labelStyle: const TextStyle(fontWeight: FontWeight.w700),
-                      tabs: const <Widget>[
-                        Tab(text: 'Requests', icon: Icon(Icons.playlist_play)),
-                        Tab(text: 'Discover', icon: Icon(Icons.explore_outlined)),
-                        Tab(text: 'Issues', icon: Icon(Icons.report_problem_outlined)),
-                      ],
-                    ),
-                  ),
+              final TabController controller = DefaultTabController.of(context);
+              return AnimatedBuilder(
+                animation: controller,
+                builder: (BuildContext context, Widget? child) =>
+                    ExpressiveDestinationBar(
+                  selectedIndex: controller.index,
+                  onSelected: (int index) => controller.animateTo(index),
+                  destinations: const <ExpressiveDestination>[
+                    ExpressiveDestination(icon: Icons.playlist_play, label: 'Requests'),
+                    ExpressiveDestination(icon: Icons.explore_outlined, label: 'Discover'),
+                    ExpressiveDestination(icon: Icons.report_problem_outlined, label: 'Issues'),
+                  ],
                 ),
               );
             },
