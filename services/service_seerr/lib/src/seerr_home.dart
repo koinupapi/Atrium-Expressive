@@ -28,38 +28,6 @@ class SeerrHome extends StatelessWidget {
       length: 3,
       child: Column(
         children: <Widget>[
-          Builder(
-            builder: (BuildContext context) {
-              final ColorScheme colors = Theme.of(context).colorScheme;
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Insets.md,
-                  vertical: Insets.sm,
-                ),
-                child: Material(
-                  color: colors.surfaceContainerLow,
-                  borderRadius: Radii.card,
-                  clipBehavior: Clip.antiAlias,
-                  child: TabBar(
-                    dividerHeight: 0,
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    indicator: BoxDecoration(
-                      color: colors.secondaryContainer,
-                      borderRadius: Radii.card,
-                    ),
-                    labelColor: colors.onSecondaryContainer,
-                    unselectedLabelColor: colors.onSurfaceVariant,
-                    labelStyle: const TextStyle(fontWeight: FontWeight.w700),
-                    tabs: const <Widget>[
-                      Tab(text: 'Requests', icon: Icon(Icons.playlist_play)),
-                      Tab(text: 'Discover', icon: Icon(Icons.explore_outlined)),
-                      Tab(text: 'Issues', icon: Icon(Icons.report_problem_outlined)),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
           Expanded(
             child: TabBarView(
               children: <Widget>[
@@ -68,6 +36,46 @@ class SeerrHome extends StatelessWidget {
                 SeerrIssuesScreen(instance: instance),
               ],
             ),
+          ),
+          Builder(
+            builder: (BuildContext context) {
+              final ColorScheme colors = Theme.of(context).colorScheme;
+              final bool floating =
+                  Theme.of(context).extension<AtriumNavigationStyle>()?.floating ??
+                      false;
+              return SafeArea(
+                top: false,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    floating ? Insets.md : Insets.sm,
+                    Insets.sm,
+                    floating ? Insets.md : Insets.sm,
+                    Insets.sm,
+                  ),
+                  child: Material(
+                    color: colors.surfaceContainerLow,
+                    borderRadius: Radii.chip,
+                    clipBehavior: Clip.antiAlias,
+                    child: TabBar(
+                      dividerHeight: 0,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      indicator: BoxDecoration(
+                        color: colors.secondaryContainer,
+                        borderRadius: Radii.chip,
+                      ),
+                      labelColor: colors.onSecondaryContainer,
+                      unselectedLabelColor: colors.onSurfaceVariant,
+                      labelStyle: const TextStyle(fontWeight: FontWeight.w700),
+                      tabs: const <Widget>[
+                        Tab(text: 'Requests', icon: Icon(Icons.playlist_play)),
+                        Tab(text: 'Discover', icon: Icon(Icons.explore_outlined)),
+                        Tab(text: 'Issues', icon: Icon(Icons.report_problem_outlined)),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
