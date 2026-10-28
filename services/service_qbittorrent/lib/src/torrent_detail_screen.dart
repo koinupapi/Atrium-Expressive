@@ -295,7 +295,7 @@ class _OverviewTab extends ConsumerWidget {
                 padding: const EdgeInsets.all(Insets.lg),
                 decoration: BoxDecoration(
                   color: cs.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: Radii.feature,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -308,7 +308,7 @@ class _OverviewTab extends ConsumerWidget {
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: accent.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: Radii.feature,
                           ),
                           child: Icon(_stateIcon(torrent.state), color: accent),
                         ),
@@ -340,7 +340,7 @@ class _OverviewTab extends ConsumerWidget {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: LinearProgressIndicatorM3E(
-                              shape: ProgressM3EShape.flat,
+                              shape: ProgressM3EShape.wavy,
                               value: progress,
                               activeColor: accent,
                               trackColor: cs.surfaceContainerHighest,
@@ -706,7 +706,7 @@ class _MiniPill extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: Radii.chip,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -741,7 +741,7 @@ class _SectionCard extends StatelessWidget {
       padding: const EdgeInsets.all(Insets.lg),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: Radii.feature,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -882,7 +882,7 @@ class _TagsCard extends ConsumerWidget {
       padding: const EdgeInsets.all(Insets.lg),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: Radii.feature,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1171,7 +1171,7 @@ class _FilesTabState extends ConsumerState<_FilesTab>
                             ClipRRect(
                               borderRadius: BorderRadius.circular(6),
                               child: LinearProgressIndicatorM3E(
-                                shape: ProgressM3EShape.flat,
+                                shape: ProgressM3EShape.wavy,
                                 value: f.progress.clamp(0, 1).toDouble(),
                                 activeColor: barColor,
                                 trackColor: cs.surfaceContainerHighest,
@@ -1480,7 +1480,7 @@ class _PeersTab extends ConsumerWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(6),
                       child: LinearProgressIndicatorM3E(
-                        shape: ProgressM3EShape.flat,
+                        shape: ProgressM3EShape.wavy,
                         value: p.progress.clamp(0, 1).toDouble(),
                         activeColor: cs.primary,
                         trackColor: cs.surfaceContainerHighest,
