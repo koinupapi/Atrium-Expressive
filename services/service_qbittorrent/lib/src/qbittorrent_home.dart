@@ -1220,6 +1220,9 @@ class _TorrentTileState extends ConsumerState<_TorrentTile> {
                         curve: Curves.easeOutCubic,
                         builder: (BuildContext context, double animatedProgress, Widget? child) => LinearProgressIndicatorM3E(
                         shape: ProgressM3EShape.wavy,
+                        // The M3E widget auto-animates at 100%. Keep the
+                        // wave still when this torrent has no transfer activity.
+                        phase: (dlActive || upActive) ? 0.0 : 0.0001,
                         value: animatedProgress,
                         activeColor: complete ? cs.tertiary : v.color,
                         trackColor: isSelected
