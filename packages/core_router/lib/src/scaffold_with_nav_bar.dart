@@ -44,6 +44,7 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
         widget.navigationShell.goBranch(0);
       },
       child: Scaffold(
+        extendBody: widget.floatingNavigation,
         body: NotificationListener<ScrollNotification>(
         onNotification: (ScrollNotification notification) {
           if (notification.metrics.axis == Axis.vertical) {
