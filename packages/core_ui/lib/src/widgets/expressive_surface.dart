@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../design_tokens.dart';
 
+enum ExpressiveSurfaceShape { card, hero, feature, pill }
+
 /// Shared expressive surface used by dashboard and service modules.
 ///
 /// Color comes from the active Material color scheme, so wallpaper-derived
@@ -12,6 +14,7 @@ class ExpressiveSurface extends StatelessWidget {
     this.onTap,
     this.padding = const EdgeInsets.all(Insets.lg),
     this.color,
+    this.shape = ExpressiveSurfaceShape.card,
     super.key,
   });
 
@@ -19,13 +22,19 @@ class ExpressiveSurface extends StatelessWidget {
   final VoidCallback? onTap;
   final EdgeInsetsGeometry padding;
   final Color? color;
+  final ExpressiveSurfaceShape shape;
 
   @override
   Widget build(BuildContext context) {
     final ColorScheme colors = Theme.of(context).colorScheme;
     return Material(
       color: color ?? colors.surfaceContainerHigh,
-      borderRadius: Radii.card,
+      borderRadius: switch (shape) {
+        ExpressiveSurfaceShape.card => Radii.card,
+        ExpressiveSurfaceShape.hero => Radii.hero,
+        ExpressiveSurfaceShape.feature => Radii.feature,
+        ExpressiveSurfaceShape.pill => Radii.round,
+      },
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -42,6 +51,7 @@ class ExpressiveIconBadge extends StatelessWidget {
     this.accent,
     this.size = 44,
     this.iconSize = 24,
+    this.round = false,
     super.key,
   });
 
@@ -49,6 +59,7 @@ class ExpressiveIconBadge extends StatelessWidget {
   final Color? accent;
   final double size;
   final double iconSize;
+  final bool round;
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +74,7 @@ class ExpressiveIconBadge extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(Radii.md),
+        borderRadius: round ? Radii.round : BorderRadius.circular(Radii.md),
       ),
       child: Icon(icon, size: iconSize, color: foreground),
     );
