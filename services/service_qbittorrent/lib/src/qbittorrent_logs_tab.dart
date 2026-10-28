@@ -227,7 +227,7 @@ class _QbittorrentLogsTabState extends ConsumerState<QbittorrentLogsTab> {
                     controller: _scrollController,
                     padding: const EdgeInsets.only(
                       top: Insets.xs,
-                      bottom: 80,
+                      bottom: ExpressiveNavigationClearance.bottomPadding(context),
                     ),
                     itemCount: reversed.length,
                     itemBuilder: (BuildContext context, int index) {
