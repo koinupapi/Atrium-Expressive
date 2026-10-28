@@ -47,15 +47,15 @@ class SeerrHome extends StatelessWidget {
                 top: false,
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(
-                    floating ? Insets.md : Insets.sm,
-                    Insets.sm,
-                    floating ? Insets.md : Insets.sm,
-                    Insets.sm,
+                    floating ? Insets.md : 0,
+                    floating ? Insets.sm : 0,
+                    floating ? Insets.md : 0,
+                    floating ? Insets.sm : 0,
                   ),
                   child: Material(
                     color: colors.surfaceContainerLow,
-                    borderRadius: Radii.chip,
-                    clipBehavior: Clip.antiAlias,
+                    borderRadius: floating ? Radii.chip : BorderRadius.zero,
+                    clipBehavior: floating ? Clip.antiAlias : Clip.none,
                     child: TabBar(
                       dividerHeight: 0,
                       indicatorSize: TabBarIndicatorSize.tab,
