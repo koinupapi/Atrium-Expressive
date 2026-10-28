@@ -142,30 +142,48 @@ class QbittorrentHome extends ConsumerWidget {
           },
         ),
       ),
-      bottomNavigationBar: AnimatedSize(
-        duration: const Duration(milliseconds: 200),
-        alignment: Alignment.topCenter,
-        child: isNavbarVisible
-            ? ExpressiveDestinationBar(
-                selectedIndex: currentIndex,
-                onSelected: (int index) {
-                  if (index == currentIndex) {
-                    ref
-                        .read(qbitHomeScrollToTopProvider((instance, index)).notifier)
-                        .update((int state) => state + 1);
-                  } else {
-                    ref
-                        .read(qbitActiveTabBarIndexProvider(instance).notifier)
-                        .state = index;
-                  }
-                },
-                destinations: const <ExpressiveDestination>[
-                  ExpressiveDestination(icon: Icons.home_outlined, label: 'Home'),
-                  ExpressiveDestination(icon: Icons.settings_outlined, label: 'Settings'),
-                  ExpressiveDestination(icon: Icons.article_outlined, label: 'Logs'),
-                ],
-              )
-            : const SizedBox.shrink(),
+      bottomNavigationBar: ClipRect(
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          reverseDuration: const Duration(milliseconds: 250),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return SizeTransition(
+              sizeFactor: animation,
+              axisAlignment: -1,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 1),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              ),
+            );
+          },
+          child: isNavbarVisible
+              ? ExpressiveDestinationBar(
+                  key: const ValueKey<String>('qbit-navigation'),
+                  selectedIndex: currentIndex,
+                  onSelected: (int index) {
+                    if (index == currentIndex) {
+                      ref
+                          .read(qbitHomeScrollToTopProvider((instance, index)).notifier)
+                          .update((int state) => state + 1);
+                    } else {
+                      ref
+                          .read(qbitActiveTabBarIndexProvider(instance).notifier)
+                          .state = index;
+                    }
+                  },
+                  destinations: const <ExpressiveDestination>[
+                    ExpressiveDestination(icon: Icons.home_outlined, label: 'Home'),
+                    ExpressiveDestination(icon: Icons.settings_outlined, label: 'Settings'),
+                    ExpressiveDestination(icon: Icons.article_outlined, label: 'Logs'),
+                  ],
+                )
+              : const SizedBox.shrink(key: ValueKey<String>('qbit-navigation-hidden')),
+        ),
       ),
     );
   }
@@ -306,7 +324,15 @@ class _TorrentsTabState extends ConsumerState<_TorrentsTab> {
           ),
         ],
       ),
-      floatingActionButton: _torrentFab(context, ref),
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(
+          bottom: (Theme.of(context).extension<AtriumNavigationStyle>()?.floating ?? false) &&
+                  ref.watch(qbitBottomNavVisibleProvider(instance))
+              ? 96
+              : 0,
+        ),
+        child: _torrentFab(context, ref),
+      ),
       body: AsyncValueView<List<QbitTorrent>>(
         value: torrents,
         onRetry: () => ref.invalidate(qbitRawTorrentsProvider(instance)),
