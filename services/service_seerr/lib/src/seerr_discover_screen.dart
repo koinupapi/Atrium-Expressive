@@ -107,14 +107,29 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colors = Theme.of(context).colorScheme;
     return Padding(
       padding: Insets.pageH,
-      child: Text(
-        title,
-        style: Theme.of(context)
-            .textTheme
-            .titleLarge
-            ?.copyWith(fontWeight: FontWeight.bold),
+      child: Row(
+        children: <Widget>[
+          Container(
+            width: 7,
+            height: 26,
+            decoration: BoxDecoration(
+              color: colors.primary,
+              borderRadius: Radii.round,
+            ),
+          ),
+          const SizedBox(width: Insets.md),
+          Expanded(
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -231,6 +246,9 @@ class _GenreSection extends ConsumerWidget {
                   return Padding(
                     padding: const EdgeInsets.only(right: Insets.sm),
                     child: ActionChip(
+                      shape: const StadiumBorder(),
+                      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+                      side: BorderSide.none,
                       avatar: Icon(
                         isMovie
                             ? Icons.movie_filter_outlined
