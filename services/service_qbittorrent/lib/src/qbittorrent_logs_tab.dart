@@ -225,7 +225,7 @@ class _QbittorrentLogsTabState extends ConsumerState<QbittorrentLogsTab> {
                   },
                   child: ListView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.only(
+                    padding: EdgeInsets.only(
                       top: Insets.xs,
                       bottom: ExpressiveNavigationClearance.bottomPadding(context),
                     ),
