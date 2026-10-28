@@ -14,6 +14,7 @@ Future<void> showSeerrReportIssueSheet(
   required Instance instance,
   required int mediaId,
   required String title,
+  String? year,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -24,6 +25,7 @@ Future<void> showSeerrReportIssueSheet(
       instance: instance,
       mediaId: mediaId,
       title: title,
+      year: year,
     ),
   );
 }
@@ -36,6 +38,7 @@ class SeerrReportIssueSheet extends ConsumerStatefulWidget {
     required this.instance,
     required this.mediaId,
     required this.title,
+    this.year,
     super.key,
   });
 
@@ -46,6 +49,7 @@ class SeerrReportIssueSheet extends ConsumerStatefulWidget {
 
   /// Display title of the media being reported, for the sheet header.
   final String title;
+  final String? year;
 
   @override
   ConsumerState<SeerrReportIssueSheet> createState() =>
@@ -126,6 +130,15 @@ class _SeerrReportIssueSheetState extends ConsumerState<SeerrReportIssueSheet> {
             ),
             const SizedBox(height: 2),
             Text(widget.title, style: theme.textTheme.titleLarge),
+            if (widget.year != null) ...<Widget>[
+              const SizedBox(height: Insets.xs),
+              Text(
+                widget.year!,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
             const SizedBox(height: Insets.lg),
             Wrap(
               spacing: Insets.sm,
