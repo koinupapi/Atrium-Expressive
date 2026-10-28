@@ -31,6 +31,17 @@ abstract final class Radii {
   // Larger, softer card corners.
   static const BorderRadius card = BorderRadius.all(Radius.circular(lg));
   static const BorderRadius chip = BorderRadius.all(Radius.circular(xl));
+
+  // Expressive shape roles: use large soft corners for prominent surfaces,
+  // asymmetric corners for feature cards, and circles for compact icon badges.
+  static const BorderRadius hero = BorderRadius.all(Radius.circular(32));
+  static const BorderRadius feature = BorderRadius.only(
+    topLeft: Radius.circular(32),
+    topRight: Radius.circular(16),
+    bottomLeft: Radius.circular(16),
+    bottomRight: Radius.circular(32),
+  );
+  static const BorderRadius round = BorderRadius.all(Radius.circular(100));
 }
 
 abstract final class Sizes {
