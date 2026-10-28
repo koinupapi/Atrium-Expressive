@@ -1219,7 +1219,7 @@ class _TorrentTileState extends ConsumerState<_TorrentTile> {
                         duration: const Duration(milliseconds: 450),
                         curve: Curves.easeOutCubic,
                         builder: (BuildContext context, double animatedProgress, Widget? child) => LinearProgressIndicatorM3E(
-                        shape: ProgressM3EShape.flat,
+                        shape: ProgressM3EShape.wavy,
                         value: animatedProgress,
                         activeColor: complete ? cs.tertiary : v.color,
                         trackColor: isSelected
