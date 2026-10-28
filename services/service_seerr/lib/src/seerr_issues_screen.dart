@@ -152,7 +152,7 @@ class _IssueCard extends ConsumerWidget {
 
     return Material(
       color: cs.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(Radii.lg),
+      borderRadius: Radii.feature,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => pushScreen<void>(
