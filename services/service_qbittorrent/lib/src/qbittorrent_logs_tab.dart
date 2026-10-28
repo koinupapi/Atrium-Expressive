@@ -280,6 +280,7 @@ class _QbittorrentLogsTabState extends ConsumerState<QbittorrentLogsTab> {
             Padding(
               padding: const EdgeInsets.only(right: Insets.xs),
               child: FilterChip(
+                shape: const StadiumBorder(),
                 selected: _selectedLevel == level,
                 label: Text(level.label),
                 onSelected: (bool selected) {
@@ -382,7 +383,7 @@ class _LogCard extends StatelessWidget {
 
     final Widget tile = Material(
       color: cs.surfaceContainerHigh,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: Radii.feature,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -397,7 +398,7 @@ class _LogCard extends StatelessWidget {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: v.container,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: Radii.feature,
                 ),
                 child: Icon(
                   v.icon,
