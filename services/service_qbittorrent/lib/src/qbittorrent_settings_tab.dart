@@ -1614,7 +1614,7 @@ class _QbittorrentSettingsTabState
         Insets.md,
         Insets.sm,
         Insets.md,
-        80,
+        ExpressiveNavigationClearance.bottomPadding(context),
       ),
       children: children,
     );
