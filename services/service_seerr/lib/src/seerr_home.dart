@@ -236,7 +236,7 @@ class _RequestTileState extends ConsumerState<_RequestTile> {
             context,
             SeerrItemDetailScreen(instance: widget.instance, item: item),
           ),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: Radii.feature,
           child: SeerrRequestCard(
             item: item,
             api: ref.watch(seerrApiProvider(widget.instance)).value,
@@ -314,6 +314,7 @@ class _RequestTileState extends ConsumerState<_RequestTile> {
       children: <Widget>[
         Expanded(
           child: FilledButton.tonalIcon(
+            style: FilledButton.styleFrom(shape: const StadiumBorder()),
             onPressed: _busy ? null : () => _handleAction('approve'),
             icon: const Icon(Icons.check, size: 18),
             label: const Text('Approve'),
@@ -322,6 +323,7 @@ class _RequestTileState extends ConsumerState<_RequestTile> {
         const SizedBox(width: Insets.sm),
         Expanded(
           child: OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(shape: const StadiumBorder()),
             onPressed: _busy ? null : () => _handleAction('decline'),
             icon: const Icon(Icons.close, size: 18),
             label: const Text('Decline'),
