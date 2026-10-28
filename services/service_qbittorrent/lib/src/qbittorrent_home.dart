@@ -51,6 +51,7 @@ class QbittorrentHome extends ConsumerWidget {
     ];
 
     return Scaffold(
+      extendBody: Theme.of(context).extension<AtriumNavigationStyle>()?.floating ?? false,
       drawerEdgeDragWidth:
           drawer != null ? MediaQuery.sizeOf(context).width * 0.15 : null,
       drawer: drawer,
@@ -141,48 +142,30 @@ class QbittorrentHome extends ConsumerWidget {
           },
         ),
       ),
-      bottomNavigationBar: AnimatedContainer(
+      bottomNavigationBar: AnimatedSize(
         duration: const Duration(milliseconds: 200),
-        height: isNavbarVisible ? 80 : 0,
-        child: SingleChildScrollView(
-          physics: const NeverScrollableScrollPhysics(),
-          child: SizedBox(
-            height: 80,
-            child: NavigationBar(
-              selectedIndex: currentIndex,
-              onDestinationSelected: (int index) {
-                if (index == currentIndex) {
-                  ref
-                      .read(
-                        qbitHomeScrollToTopProvider((instance, index)).notifier,
-                      )
-                      .update((int state) => state + 1);
-                } else {
-                  ref
-                      .read(qbitActiveTabBarIndexProvider(instance).notifier)
-                      .state = index;
-                }
-              },
-              destinations: const <NavigationDestination>[
-                NavigationDestination(
-                  icon: Icon(Icons.home_outlined),
-                  selectedIcon: Icon(Icons.home),
-                  label: 'Home',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.settings_outlined),
-                  selectedIcon: Icon(Icons.settings),
-                  label: 'Settings',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.article_outlined),
-                  selectedIcon: Icon(Icons.article),
-                  label: 'Logs',
-                ),
-              ],
-            ),
-          ),
-        ),
+        alignment: Alignment.topCenter,
+        child: isNavbarVisible
+            ? ExpressiveDestinationBar(
+                selectedIndex: currentIndex,
+                onSelected: (int index) {
+                  if (index == currentIndex) {
+                    ref
+                        .read(qbitHomeScrollToTopProvider((instance, index)).notifier)
+                        .update((int state) => state + 1);
+                  } else {
+                    ref
+                        .read(qbitActiveTabBarIndexProvider(instance).notifier)
+                        .state = index;
+                  }
+                },
+                destinations: const <ExpressiveDestination>[
+                  ExpressiveDestination(icon: Icons.home_outlined, label: 'Home'),
+                  ExpressiveDestination(icon: Icons.settings_outlined, label: 'Settings'),
+                  ExpressiveDestination(icon: Icons.article_outlined, label: 'Logs'),
+                ],
+              )
+            : const SizedBox.shrink(),
       ),
     );
   }
@@ -360,7 +343,9 @@ class _TorrentsTabState extends ConsumerState<_TorrentsTab> {
                   )
                 else
                   SliverPadding(
-                    padding: const EdgeInsets.only(bottom: 80),
+                    padding: EdgeInsets.only(
+                      bottom: ExpressiveNavigationClearance.bottomPadding(context),
+                    ),
                     sliver: SliverList.builder(
                       itemCount: list.length,
                       itemBuilder: (BuildContext context, int index) =>
@@ -1071,7 +1056,7 @@ class _TorrentTileState extends ConsumerState<_TorrentTile> {
 
     final Widget tile = Material(
       color: isSelected ? cs.primaryContainer : cs.surfaceContainerHigh,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: Radii.feature,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTapDown: (TapDownDetails details) {
