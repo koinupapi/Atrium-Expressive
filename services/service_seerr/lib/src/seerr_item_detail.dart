@@ -486,6 +486,7 @@ class _ReportIssueButton extends StatelessWidget {
         instance: instance,
         mediaId: item.mediaInfo!.id!,
         title: item.displayTitle,
+        year: item.year,
       ),
       icon: const Icon(Icons.flag_outlined),
       label: const Text('Report issue'),
@@ -998,6 +999,16 @@ class _RequestOptionsSheetState extends ConsumerState<_RequestOptionsSheet> {
                               fontWeight: FontWeight.w800,
                             ),
                           ),
+                          if (widget.item.year != null) ...<Widget>[
+                            const SizedBox(height: Insets.xs),
+                            Text(
+                              widget.item.year!,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: cs.onSurfaceVariant,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
