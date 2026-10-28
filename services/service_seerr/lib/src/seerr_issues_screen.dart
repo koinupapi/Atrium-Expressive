@@ -98,7 +98,7 @@ class _SeerrIssuesScreenState extends ConsumerState<SeerrIssuesScreen>
               ref.invalidate(seerrIssuesProvider(args));
             },
       child: ListView.separated(
-                  padding: Insets.page,
+                  padding: const EdgeInsets.fromLTRB(Insets.lg, Insets.lg, Insets.lg, 112),
                   itemCount: list.length,
                   separatorBuilder: (_, __) =>
                       const SizedBox(height: Insets.md),
