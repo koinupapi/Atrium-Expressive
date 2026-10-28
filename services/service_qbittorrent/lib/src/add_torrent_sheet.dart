@@ -322,7 +322,7 @@ class _AddTorrentSheetState extends ConsumerState<AddTorrentSheet> {
                 );
               },
               loading: () => const LinearProgressIndicatorM3E(
-                shape: ProgressM3EShape.flat,
+                shape: ProgressM3EShape.wavy,
               ),
               error: (_, __) => const SizedBox.shrink(),
             ),
