@@ -92,7 +92,12 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
               padding: widget.floatingNavigation
                   ? const EdgeInsets.symmetric(horizontal: 12, vertical: 4)
                   : EdgeInsets.zero,
-              child: Material(
+              child: Padding(
+                // Keep the first and last labels clear of the pill's curved ends.
+                padding: widget.floatingNavigation
+                    ? const EdgeInsets.symmetric(horizontal: 6)
+                    : EdgeInsets.zero,
+                child: Material(
                 color: Colors.transparent,
                 borderRadius: widget.floatingNavigation
                     ? BorderRadius.circular(40)
@@ -125,6 +130,7 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
                   label: 'Settings',
                 ),
               ],
+                ),
                 ),
               ),
             ),
