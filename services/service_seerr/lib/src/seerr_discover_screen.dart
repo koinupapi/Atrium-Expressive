@@ -40,7 +40,10 @@ class SeerrDiscoverScreen extends ConsumerWidget {
         ref.invalidate(seerrTvGenresProvider(instance));
       },
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(0, Insets.lg, 0, 112),
+        padding: EdgeInsets.only(
+          top: Insets.lg,
+          bottom: ExpressiveNavigationClearance.bottomPadding(context),
+        ),
         children: <Widget>[
           _DiscoverSection(
             title: 'Watchlist',
