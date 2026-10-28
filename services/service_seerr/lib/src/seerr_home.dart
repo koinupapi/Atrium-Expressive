@@ -26,36 +26,54 @@ class SeerrHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 3,
-      child: Column(
-        children: <Widget>[
-          Expanded(
-            child: TabBarView(
-              children: <Widget>[
-                _SeerrRequestsTab(instance: instance),
-                SeerrDiscoverScreen(instance: instance),
-                SeerrIssuesScreen(instance: instance),
+      child: Builder(
+        builder: (BuildContext context) {
+          final bool floating =
+              Theme.of(context).extension<AtriumNavigationStyle>()?.floating ??
+                  false;
+          final TabController controller = DefaultTabController.of(context);
+          final Widget pages = TabBarView(
+            children: <Widget>[
+              _SeerrRequestsTab(instance: instance),
+              SeerrDiscoverScreen(instance: instance),
+              SeerrIssuesScreen(instance: instance),
+            ],
+          );
+          final Widget navigation = AnimatedBuilder(
+            animation: controller,
+            builder: (BuildContext context, Widget? child) =>
+                ExpressiveDestinationBar(
+              selectedIndex: controller.index,
+              onSelected: (int index) => controller.animateTo(index),
+              destinations: const <ExpressiveDestination>[
+                ExpressiveDestination(icon: Icons.playlist_play, label: 'Requests'),
+                ExpressiveDestination(icon: Icons.explore_outlined, label: 'Discover'),
+                ExpressiveDestination(icon: Icons.report_problem_outlined, label: 'Issues'),
               ],
             ),
-          ),
-          Builder(
-            builder: (BuildContext context) {
-              final TabController controller = DefaultTabController.of(context);
-              return AnimatedBuilder(
-                animation: controller,
-                builder: (BuildContext context, Widget? child) =>
-                    ExpressiveDestinationBar(
-                  selectedIndex: controller.index,
-                  onSelected: (int index) => controller.animateTo(index),
-                  destinations: const <ExpressiveDestination>[
-                    ExpressiveDestination(icon: Icons.playlist_play, label: 'Requests'),
-                    ExpressiveDestination(icon: Icons.explore_outlined, label: 'Discover'),
-                    ExpressiveDestination(icon: Icons.report_problem_outlined, label: 'Issues'),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
+          );
+          if (!floating) {
+            return Column(
+              children: <Widget>[
+                Expanded(child: pages),
+                navigation,
+              ],
+            );
+          }
+          // Overlay the pill rather than reserving a full-width rectangular
+          // strip. Scrolling content remains visible around the curved edges.
+          return Stack(
+            children: <Widget>[
+              Positioned.fill(child: pages),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: navigation,
+              ),
+            ],
+          );
+        },
       ),
     );
   }
