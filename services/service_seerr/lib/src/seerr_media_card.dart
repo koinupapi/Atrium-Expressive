@@ -39,7 +39,7 @@ class SeerrMediaCard extends StatelessWidget {
           Expanded(
             child: Material(
               color: theme.colorScheme.surfaceContainerHigh,
-              borderRadius: Radii.card,
+              borderRadius: Radii.feature,
               clipBehavior: Clip.antiAlias,
               child: InkWell(
                 onTap: onTap,
@@ -212,7 +212,7 @@ class SeerrRequestCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: cs.surfaceContainerHigh,
-        borderRadius: Radii.card,
+        borderRadius: Radii.feature,
       ),
       clipBehavior: Clip.antiAlias,
       child: Stack(
