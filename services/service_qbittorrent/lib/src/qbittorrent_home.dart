@@ -459,7 +459,7 @@ class _TopControlBarState extends ConsumerState<_TopControlBar> {
       padding: const EdgeInsets.all(Insets.md),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: Radii.hero,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -685,10 +685,10 @@ class _TransferStatBadge extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final ColorScheme cs = theme.colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(14),
+        color: color.withValues(alpha: 0.11),
+        borderRadius: Radii.feature,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -714,8 +714,8 @@ class _TransferStatBadge extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             '$count',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w800,
               color: cs.onSurface,
             ),
           ),
@@ -1142,7 +1142,7 @@ class _TorrentTileState extends ConsumerState<_TorrentTile> {
                       color: isSelected
                           ? cs.onPrimaryContainer.withValues(alpha: 0.15)
                           : v.container,
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: Radii.feature,
                     ),
                     child: Icon(
                       isSelected ? Icons.check : v.icon,
@@ -1214,13 +1214,18 @@ class _TorrentTileState extends ConsumerState<_TorrentTile> {
                   Expanded(
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: LinearProgressIndicatorM3E(
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween<double>(begin: 0, end: progress),
+                        duration: const Duration(milliseconds: 450),
+                        curve: Curves.easeOutCubic,
+                        builder: (BuildContext context, double animatedProgress, Widget? child) => LinearProgressIndicatorM3E(
                         shape: ProgressM3EShape.flat,
-                        value: progress,
+                        value: animatedProgress,
                         activeColor: complete ? cs.tertiary : v.color,
                         trackColor: isSelected
                             ? cs.onPrimaryContainer.withValues(alpha: 0.15)
                             : cs.surfaceContainerHighest,
+                        ),
                       ),
                     ),
                   ),
