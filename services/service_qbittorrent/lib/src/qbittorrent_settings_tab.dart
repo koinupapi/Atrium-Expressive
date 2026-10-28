@@ -1646,7 +1646,7 @@ class _QbittorrentSettingsTabState
       elevation: 0,
       color: cs.surfaceContainerHigh,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: Radii.feature,
       ),
       child: Column(
         children: children,
