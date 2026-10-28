@@ -1610,7 +1610,7 @@ class _QbittorrentSettingsTabState
   // ==========================================
   Widget _buildTabListView({required List<Widget> children}) {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(
+      padding: EdgeInsets.fromLTRB(
         Insets.md,
         Insets.sm,
         Insets.md,
