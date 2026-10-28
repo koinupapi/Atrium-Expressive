@@ -83,28 +83,48 @@ class _ScaffoldWithNavBarState extends State<ScaffoldWithNavBar> {
       drawerEdgeDragWidth: widget.drawer != null
           ? MediaQuery.sizeOf(context).width * 0.15
           : null,
-      bottomNavigationBar: AnimatedSize(
-        duration: const Duration(milliseconds: 200),
-        alignment: Alignment.topCenter,
-        child: _isNavbarVisible
-            ? Theme(
-                data: Theme.of(context).copyWith(
-                  extensions: <ThemeExtension<dynamic>>[
-                    AtriumNavigationStyle(floating: widget.floatingNavigation),
-                  ],
+      bottomNavigationBar: ClipRect(
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          reverseDuration: const Duration(milliseconds: 250),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return SizeTransition(
+              sizeFactor: animation,
+              axisAlignment: -1,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 1),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              ),
+            );
+          },
+          child: _isNavbarVisible
+              ? Theme(
+                  key: const ValueKey<String>('root-navigation'),
+                  data: Theme.of(context).copyWith(
+                    extensions: <ThemeExtension<dynamic>>[
+                      AtriumNavigationStyle(floating: widget.floatingNavigation),
+                    ],
+                  ),
+                  child: ExpressiveDestinationBar(
+                    selectedIndex: widget.navigationShell.currentIndex,
+                    onSelected: _onTap,
+                    destinations: const <ExpressiveDestination>[
+                      ExpressiveDestination(icon: Icons.dashboard_outlined, label: 'Dash'),
+                      ExpressiveDestination(icon: Icons.calendar_today_outlined, label: 'Calendar'),
+                      ExpressiveDestination(icon: Icons.swap_vert_outlined, label: 'Activity'),
+                      ExpressiveDestination(icon: Icons.settings_outlined, label: 'Settings'),
+                    ],
+                  ),
+                )
+              : const SizedBox.shrink(
+                  key: ValueKey<String>('root-navigation-hidden'),
                 ),
-                child: ExpressiveDestinationBar(
-                  selectedIndex: widget.navigationShell.currentIndex,
-                  onSelected: _onTap,
-                  destinations: const <ExpressiveDestination>[
-                    ExpressiveDestination(icon: Icons.dashboard_outlined, label: 'Dash'),
-                    ExpressiveDestination(icon: Icons.calendar_today_outlined, label: 'Calendar'),
-                    ExpressiveDestination(icon: Icons.swap_vert_outlined, label: 'Activity'),
-                    ExpressiveDestination(icon: Icons.settings_outlined, label: 'Settings'),
-                  ],
-                ),
-              )
-            : const SizedBox.shrink(),
+        ),
       ),
     ),);
   }
