@@ -28,9 +28,6 @@ class SeerrHome extends StatelessWidget {
       length: 3,
       child: Builder(
         builder: (BuildContext context) {
-          final bool floating =
-              Theme.of(context).extension<AtriumNavigationStyle>()?.floating ??
-                  false;
           final TabController controller = DefaultTabController.of(context);
           final Widget pages = TabBarView(
             children: <Widget>[
@@ -52,27 +49,7 @@ class SeerrHome extends StatelessWidget {
               ],
             ),
           );
-          if (!floating) {
-            return Column(
-              children: <Widget>[
-                Expanded(child: pages),
-                navigation,
-              ],
-            );
-          }
-          // Overlay the pill rather than reserving a full-width rectangular
-          // strip. Scrolling content remains visible around the curved edges.
-          return Stack(
-            children: <Widget>[
-              Positioned.fill(child: pages),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: navigation,
-              ),
-            ],
-          );
+          return ExpressiveNavigationLayout(content: pages, navigation: navigation);
         },
       ),
     );
@@ -147,7 +124,7 @@ class _SeerrRequestsTabState extends ConsumerState<_SeerrRequestsTab>
                         ],
                       )
                     : ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(Insets.lg, Insets.lg, Insets.lg, 112),
+                        padding: ExpressiveNavigationClearance.listPadding(context),
                         itemCount: list.length,
                         separatorBuilder: (_, __) =>
                             const SizedBox(height: Insets.md),
