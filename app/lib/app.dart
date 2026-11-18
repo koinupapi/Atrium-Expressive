@@ -88,7 +88,7 @@ class AtriumApp extends ConsumerWidget {
             AtriumTheme.dark(activeDark, fontFamily: fontFamily);
 
         return MaterialApp.router(
-          title: 'Atrium',
+          title: 'AE',
           debugShowCheckedModeBanner: false,
           theme: lightTheme,
           darkTheme: darkTheme,
