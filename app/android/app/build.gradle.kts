@@ -48,7 +48,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "app.atrium"
+        applicationId = "app.atrium.ae"
         // local_auth + flutter_secure_storage need API 23+ (BiometricPrompt,
         // EncryptedSharedPreferences). Floor at 23 regardless of Flutter's
         // default.
@@ -57,11 +57,11 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
-        // Dynamic app label based on project property appName (defaults to "Atrium")
+        // Dynamic app label based on project property appName (defaults to "AE")
         val appNameProp = if (project.hasProperty("appName")) {
             project.property("appName") as String
         } else {
-            "Atrium"
+            "AE"
         }
         manifestPlaceholders["appName"] = appNameProp
     }
