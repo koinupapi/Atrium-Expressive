@@ -626,6 +626,12 @@ void main() {
 
   testWidgets('an unavailable widget names the service it needs',
       (WidgetTester tester) async {
+    // Mount the entire lazy edit list regardless of the default card order.
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     // "Not configured" leaves someone to guess what is missing, which is why
     // a widget that could never fill read as broken rather than unavailable.
     await pumpBody(
