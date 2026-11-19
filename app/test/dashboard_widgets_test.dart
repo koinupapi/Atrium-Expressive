@@ -19,6 +19,7 @@ import 'package:service_jellyfin/service_jellyfin.dart' as jf;
 import 'package:service_glances/service_glances.dart';
 import 'package:service_nzbget/service_nzbget.dart';
 import 'package:service_ombi/service_ombi.dart';
+import 'package:service_plex/service_plex.dart';
 import 'package:service_qbittorrent/service_qbittorrent.dart';
 import 'package:service_radarr/service_radarr.dart';
 import 'package:service_seerr/service_seerr.dart';
@@ -158,13 +159,20 @@ void main() {
     expect(parseSabSpeed('junk'), 0);
   });
 
-  testWidgets('DashboardStreamsWidget shows Tautulli and Jellyfin sessions',
+  testWidgets('DashboardStreamsWidget shows Plex and other live sources',
       (WidgetTester tester) async {
+    final Instance plex = makeInstance(ServiceKind.plex);
     final Instance tau = makeInstance(ServiceKind.tautulli);
     final Instance jelly = makeInstance(ServiceKind.jellyfin);
     await pumpBody(
       tester,
       <Override>[
+        activeInstancesProvider.overrideWithValue(<Instance>[plex, tau, jelly]),
+        plexSessionsProvider(plex).overrideWith(
+          (Ref ref) async => const <PlexSession>[
+            PlexSession(title: 'Dune', viewOffset: 3000, duration: 6000),
+          ],
+        ),
         tautulliActivityProvider(tau).overrideWith(
           (Ref ref) async => const TautulliActivity(
             streamCount: 1,
@@ -181,7 +189,7 @@ void main() {
             ],
           ),
         ),
-        jf.jellyfinSessionsProvider(jelly).overrideWith(
+        jf.jellyfinFastSessionsProvider(jelly).overrideWith(
               (Ref ref) =>
                   Stream<List<jf.ActiveSession>>.value(<jf.ActiveSession>[
                 const jf.ActiveSession(
@@ -202,21 +210,15 @@ void main() {
               ]),
             ),
       ],
-      DashboardStreamsWidget(
-        tautulliInstances: <Instance>[tau],
-        jellyfinInstances: <Instance>[jelly],
-        embyInstances: const <Instance>[],
-      ),
+      const SingleChildScrollView(child: DashboardStreamsWidget()),
     );
     expect(find.text('Now streaming'), findsOneWidget);
-    expect(find.textContaining('The Matrix'), findsOneWidget);
-    expect(find.textContaining('Breaking Bad'), findsOneWidget);
-    // Enriched session info: device on the meta line, the resolution chip,
-    // and Jellyfin's elapsed / total time.
-    expect(find.textContaining('Plex Web'), findsOneWidget);
-    expect(find.text('1080p'), findsOneWidget);
-    expect(find.textContaining('Web'), findsWidgets);
-    expect(find.text('0:10:00 / 0:45:00'), findsOneWidget);
+    expect(find.text('Dune'), findsOneWidget);
+    expect(find.text('The Matrix'), findsOneWidget);
+    expect(find.text('Breaking Bad'), findsNothing);
+    await tester.tap(find.text('View all 3'));
+    await tester.pumpAndSettle();
+    expect(find.text('Breaking Bad'), findsOneWidget);
   });
 
   testWidgets('DashboardUpcomingWidget lists events inside the 7-day window',
@@ -525,16 +527,15 @@ void main() {
     );
     expect(find.text('Active downloads'), findsOneWidget);
     expect(find.text('Ubuntu ISO'), findsOneWidget);
-    // Streams is activity-gated: tautulli is configured but nobody is
-    // streaming (streamCount 0), so the widget stays hidden.
-    expect(find.text('Now streaming'), findsNothing);
+    expect(find.text('Now streaming'), findsOneWidget);
+    expect(find.text('No active streams'), findsOneWidget);
     // No sonarr/radarr, seerr or glances configured:
     expect(find.text('Upcoming releases'), findsNothing);
     expect(find.text('Requests'), findsNothing);
     expect(find.text('Glances'), findsNothing);
   });
 
-  testWidgets('DashboardBoard activity-gates downloads and streams',
+  testWidgets('DashboardBoard shows an idle download section when only seeding',
       (WidgetTester tester) async {
     final Instance qbit = makeInstance(ServiceKind.qbittorrent);
     final Instance tau = makeInstance(ServiceKind.tautulli);
@@ -542,7 +543,7 @@ void main() {
       tester,
       <Override>[
         activeInstancesProvider.overrideWithValue(<Instance>[qbit, tau]),
-        // Only a seeding torrent -> no active download -> widget hidden.
+        // Only a seeding torrent -> no active download.
         qbitRawTorrentsProvider(qbit).overrideWith(
           (Ref ref) async => const <QbitTorrent>[
             QbitTorrent(
@@ -552,6 +553,9 @@ void main() {
               progress: 1.0,
             ),
           ],
+        ),
+        qbitTransferProvider(qbit).overrideWith(
+          (Ref ref) async => const QbitTransferInfo(dlSpeed: 0),
         ),
         // One active session -> streams widget shown.
         tautulliActivityProvider(tau).overrideWith(
@@ -571,7 +575,9 @@ void main() {
       const DashboardBoard(),
       pumps: 3,
     );
-    expect(find.text('Active downloads'), findsNothing);
+    expect(find.text('Active downloads'), findsOneWidget);
+    expect(find.text('Nothing downloading'), findsOneWidget);
+    expect(find.text('Seeded ISO'), findsNothing);
     expect(find.text('Now streaming'), findsOneWidget);
     expect(find.textContaining('The Matrix'), findsOneWidget);
   });
@@ -637,7 +643,7 @@ void main() {
     expect(find.text('Needs Speedtest Tracker'), findsOneWidget);
     // Upcoming, recently added and recently downloaded all want the same pair.
     expect(find.text('Needs Sonarr or Radarr'), findsNWidgets(3));
-    expect(find.text('Needs Tautulli, Jellyfin or Emby'), findsOneWidget);
+    expect(find.text('Needs Plex, Tautulli, Jellyfin or Emby'), findsOneWidget);
     expect(find.text('Not configured'), findsNothing);
   });
 

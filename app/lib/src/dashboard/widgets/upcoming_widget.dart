@@ -13,24 +13,23 @@ import '../dashboard_widget_kind.dart';
 List<DateTime> upcomingWindowMonths(DateTime now) {
   final DateTime start = DateTime(now.year, now.month, 1);
   final DateTime end =
-      DateTime(now.year, now.month, now.day).add(const Duration(days: 8));
+      DateTime(now.year, now.month, now.day + 8);
   final DateTime endMonth = DateTime(end.year, end.month, 1);
   return <DateTime>[start, if (endMonth != start) endMonth];
 }
 
-/// The next 7 days of Sonarr/Radarr releases as day-grouped artwork banners:
-/// poster thumb, backdrop background, and a downloaded/pending status icon.
-class DashboardUpcomingWidget extends ConsumerWidget {
-  const DashboardUpcomingWidget({super.key});
+typedef DashboardUpcomingState = ({
+  List<CalendarEvent> events,
+  bool loading,
+  bool failed,
+  int todayCount,
+});
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme cs = theme.colorScheme;
-
+final dashboardUpcomingProvider = Provider.autoDispose<DashboardUpcomingState>(
+  (Ref ref) {
     final DateTime now = DateTime.now();
     final DateTime windowStart = DateTime(now.year, now.month, now.day);
-    final DateTime windowEnd = windowStart.add(const Duration(days: 8));
+    final DateTime windowEnd = DateTime(now.year, now.month, now.day + 8);
     final List<DateTime> months = upcomingWindowMonths(now);
 
     final List<CalendarEvent> events = <CalendarEvent>[];
@@ -54,10 +53,34 @@ class DashboardUpcomingWidget extends ConsumerWidget {
       return !d.isBefore(windowStart) && d.isBefore(windowEnd);
     }).toList()
       ..sort((CalendarEvent a, CalendarEvent b) => a.date.compareTo(b.date));
-    final List<CalendarEvent> top = upcoming.take(5).toList();
+    return (
+      events: upcoming,
+      loading: anyLoading,
+      failed: anyError,
+      todayCount: upcoming.where((CalendarEvent event) {
+        final DateTime local = event.date.toLocal();
+        return DateUtils.isSameDay(local, now);
+      }).length,
+    );
+  },
+);
+
+class DashboardUpcomingWidget extends ConsumerWidget {
+  const DashboardUpcomingWidget({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme cs = theme.colorScheme;
+    final DashboardUpcomingState state = ref.watch(dashboardUpcomingProvider);
+    final List<CalendarEvent> upcoming = state.events;
+    final DateTime now = DateTime.now();
+    final DateTime windowStart = DateTime(now.year, now.month, now.day);
+    final List<CalendarEvent> top = upcoming.take(3).toList();
+
 
     Widget body;
-    if (upcoming.isEmpty && anyLoading) {
+    if (upcoming.isEmpty && state.loading) {
       body = const Center(
         child: Padding(
           padding: EdgeInsets.all(Insets.sm),
@@ -68,10 +91,10 @@ class DashboardUpcomingWidget extends ConsumerWidget {
           ),
         ),
       );
-    } else if (upcoming.isEmpty && anyError) {
+    } else if (upcoming.isEmpty && state.failed) {
       body = DashboardErrorRow(
         onRetry: () {
-          for (final DateTime m in months) {
+          for (final DateTime m in upcomingWindowMonths(now)) {
             ref.invalidate(globalCalendarProvider((m, false)));
           }
         },
@@ -98,7 +121,7 @@ class DashboardUpcomingWidget extends ConsumerWidget {
                   width: 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: isToday ? cs.primary : cs.outline,
+                    color: isToday ? cs.onTertiaryContainer : cs.outline,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -107,7 +130,7 @@ class DashboardUpcomingWidget extends ConsumerWidget {
                   _dayLabel(day, windowStart),
                   style: theme.textTheme.labelMedium?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: isToday ? cs.primary : cs.onSurface,
+                    color: isToday ? cs.onTertiaryContainer : cs.onSurface,
                   ),
                 ),
                 const SizedBox(width: Insets.md),
@@ -118,15 +141,15 @@ class DashboardUpcomingWidget extends ConsumerWidget {
         } else {
           rows.add(const SizedBox(height: Insets.sm));
         }
-        rows.add(_ReleaseBanner(event: e));
+        rows.add(_ReleaseRow(event: e));
       }
-      if (upcoming.length > top.length) {
-        rows.add(Padding(
-          padding: const EdgeInsets.only(top: Insets.sm),
-          child:
-              DashboardIdleRow(text: '+${upcoming.length - top.length} more'),
-        ));
-      }
+      rows.add(
+        TextButton.icon(
+          onPressed: () => context.goNamed(AtriumRoutes.calendarName),
+          icon: const Icon(Icons.calendar_today_outlined),
+          label: const Text('Open calendar'),
+        ),
+      );
       body = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: rows,
@@ -135,14 +158,13 @@ class DashboardUpcomingWidget extends ConsumerWidget {
 
     return DashboardWidgetCard(
       kind: DashboardWidgetKind.upcoming,
-      accent: cs.secondary,
-      onTap: () => context.goNamed(AtriumRoutes.calendarName),
+      accent: cs.onTertiaryContainer,
       trailing: upcoming.isNotEmpty
           ? DashboardPill(
               icon: Icons.calendar_today_outlined,
               label:
                   '${upcoming.length} release${upcoming.length == 1 ? '' : 's'}',
-              color: cs.primary,
+              color: cs.onTertiaryContainer,
             )
           : null,
       child: body,
@@ -153,209 +175,48 @@ class DashboardUpcomingWidget extends ConsumerWidget {
     if (day == today) {
       return 'Today';
     }
-    if (day == today.add(const Duration(days: 1))) {
+    if (day == DateTime(today.year, today.month, today.day + 1)) {
       return 'Tomorrow';
     }
     return DateFormat('EEE, MMM d').format(day);
   }
 }
 
-/// One release as an artwork banner: fanart backdrop with a legibility scrim,
-/// poster thumb, title + meta line, and a trailing badge - a check for a
-/// grabbed release, an airtime chip for an episode still to air.
-class _ReleaseBanner extends StatelessWidget {
-  const _ReleaseBanner({required this.event});
+/// Text sits on a quiet surface; a service label identifies its source.
+class _ReleaseRow extends StatelessWidget {
+  const _ReleaseRow({required this.event});
 
   final CalendarEvent event;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final ColorScheme cs = theme.colorScheme;
-    final String? backdrop = event.backdropUrl;
-    final String? poster = event.posterUrl;
-    final bool hasArt = backdrop != null;
-    // Over a backdrop the scrim + text follow the theme: light mode gets a
-    // light scrim with dark text (not a heavy black band), dark mode keeps the
-    // classic dark scrim with white text. Either way the text stays legible.
-    final bool isLight = theme.brightness == Brightness.light;
-    final Color scrim = isLight ? Colors.white : Colors.black;
-    final Color onArt = isLight ? const Color(0xFF141414) : Colors.white;
-    final Color titleColor = hasArt ? onArt : cs.onSurface;
-    final Color subColor =
-        hasArt ? onArt.withValues(alpha: 0.78) : cs.onSurfaceVariant;
-    // Episodes carry a real airtime; movie release dates do not.
-    final String? airTime = event is SonarrCalendarEvent
-        ? DateFormat.jm().format(event.date.toLocal())
-        : null;
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: SizedBox(
-        height: 78,
-        child: Stack(
-          fit: StackFit.expand,
-          children: <Widget>[
-            if (hasArt)
-              AtriumNetworkImage(
-                imageUrl: backdrop,
-                fit: BoxFit.cover,
-                memCacheWidth: 600,
-                errorWidget: (_, __, ___) =>
-                    Container(color: cs.surfaceContainerHighest),
-              )
-            else
-              Container(color: cs.surfaceContainerHighest),
-            if (hasArt)
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: <Color>[
-                      scrim.withValues(alpha: 0.88),
-                      scrim.withValues(alpha: 0.60),
-                      scrim.withValues(alpha: 0.20),
-                    ],
-                    stops: const <double>[0.0, 0.55, 1.0],
-                  ),
-                ),
-              ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              child: Row(
-                children: <Widget>[
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: SizedBox(
-                      width: 44,
-                      height: 66,
-                      child: poster == null
-                          ? _posterFallback(cs)
-                          : AtriumNetworkImage(
-                              imageUrl: poster,
-                              fit: BoxFit.cover,
-                              memCacheWidth: 132,
-                              errorWidget: (_, __, ___) => _posterFallback(cs),
-                            ),
-                    ),
-                  ),
-                  const SizedBox(width: Insets.md),
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          event.primaryTitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: titleColor,
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          event.subtitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall
-                              ?.copyWith(color: subColor),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: Insets.sm),
-                  _StatusBadge(
-                    hasArt: hasArt,
-                    hasFile: event.hasFile,
-                    airTime: airTime,
-                    onArt: onArt,
-                    scrim: scrim,
-                  ),
-                ],
-              ),
-            ),
-          ],
+    final ColorScheme colors = theme.colorScheme;
+    final bool episode = event is SonarrCalendarEvent;
+    return Material(
+      color: colors.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(18),
+      clipBehavior: Clip.antiAlias,
+      child: ListTile(
+        leading: Icon(episode ? Icons.tv_rounded : Icons.movie_outlined),
+        title: Text(event.primaryTitle, maxLines: 2, overflow: TextOverflow.ellipsis),
+        subtitle: Text(
+          <String>[
+            event.subtitle,
+            if (episode) DateFormat.jm().format(event.date.toLocal()),
+            if (event.hasFile) 'Downloaded',
+          ].join(' · '),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
+        trailing: Text(
+          episode ? 'Sonarr' : 'Radarr',
+          style: theme.textTheme.labelMedium?.copyWith(
+            color: colors.onSurfaceVariant,
+          ),
+        ),
+        onTap: () => context.goNamed(AtriumRoutes.calendarName),
       ),
     );
-  }
-
-  Widget _posterFallback(ColorScheme cs) => Container(
-        color: cs.surfaceContainerHigh,
-        alignment: Alignment.center,
-        child: Icon(Icons.movie_outlined, size: 18, color: cs.onSurfaceVariant),
-      );
-}
-
-/// Trailing status on a release banner: a check for a grabbed release, an
-/// airtime chip for an episode still to air, nothing otherwise.
-class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({
-    required this.hasArt,
-    required this.hasFile,
-    required this.airTime,
-    required this.onArt,
-    required this.scrim,
-  });
-
-  final bool hasArt;
-  final bool hasFile;
-  final String? airTime;
-
-  /// Legible foreground over the scrim for the current theme (white in dark
-  /// mode, near-black in light mode).
-  final Color onArt;
-
-  /// The scrim base tone (opposite of [onArt]): black in dark mode, white in
-  /// light mode. Used as the inverted, low-opacity airtime-box fill.
-  final Color scrim;
-
-  @override
-  Widget build(BuildContext context) {
-    final ColorScheme cs = Theme.of(context).colorScheme;
-    if (hasFile) {
-      // A frosted plate (theme-aware) so the green check reads on the weak
-      // right side of the scrim in either mode.
-      final Color plate = hasArt ? onArt : cs.tertiary;
-      return Container(
-        width: 30,
-        height: 30,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: plate.withValues(alpha: hasArt ? 0.22 : 0.16),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(Icons.check_rounded, size: 18, color: cs.tertiary),
-      );
-    }
-    if (airTime != null) {
-      // Inverted, low-opacity plate: the box takes the scrim tone (opposite of
-      // the text) at a light alpha, keeping the on-art tone for icon + label.
-      final Color fg = hasArt ? onArt : cs.onSurfaceVariant;
-      final Color box = hasArt ? scrim : cs.surface;
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: box.withValues(alpha: hasArt ? 0.14 : 0.55),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(Icons.schedule_rounded, size: 12, color: fg),
-            const SizedBox(width: 3),
-            Text(
-              airTime!,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: fg,
-                  ),
-            ),
-          ],
-        ),
-      );
-    }
-    return const SizedBox.shrink();
   }
 }

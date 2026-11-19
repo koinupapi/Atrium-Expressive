@@ -317,8 +317,15 @@ final activitySummaryProvider =
 /// Invalidates every per-instance source feeding the Activity feed so a
 /// pull-to-refresh forces an immediate refetch. Invalidating the aggregate
 /// providers alone would only recompute over the sources' cached values.
-void refreshActivity(WidgetRef ref) {
+void refreshActivity(WidgetRef ref, {bool streamsOnly = false}) {
   for (final Instance instance in ref.read(activeInstancesProvider)) {
+    if (streamsOnly &&
+        instance.kind != ServiceKind.plex &&
+        instance.kind != ServiceKind.jellyfin &&
+        instance.kind != ServiceKind.emby &&
+        instance.kind != ServiceKind.tautulli) {
+      continue;
+    }
     switch (instance.kind) {
       case ServiceKind.plex:
         ref.invalidate(plexSessionsProvider(instance));

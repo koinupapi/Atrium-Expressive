@@ -46,12 +46,19 @@ const Set<String> _activeDlStates = <String>{
 
 /// Live count of active downloads across every qBittorrent + SABnzbd + NZBGet
 /// + Deluge instance. Instances still loading or in error contribute 0, so the
-/// dashboard only surfaces the downloads widget once real activity is
-/// confirmed.
+/// summary counts only confirmed downloads.
 final activeDownloadCountProvider = Provider.autoDispose<int>((Ref ref) {
   final List<Instance> instances = ref.watch(activeInstancesProvider);
   int count = 0;
+  final Set<(ServiceKind, String)> endpoints = <(ServiceKind, String)>{};
+  final Set<String> ids = <String>{};
   for (final Instance i in instances) {
+    final String endpoint =
+        i.localUrl.isNotEmpty ? i.localUrl : i.externalUrl;
+    if (!ids.add(i.id) ||
+        (endpoint.isNotEmpty && !endpoints.add((i.kind, endpoint)))) {
+      continue;
+    }
     if (i.kind == ServiceKind.qbittorrent) {
       final List<QbitTorrent> torrents =
           ref.watch(qbitRawTorrentsProvider(i)).value ?? const <QbitTorrent>[];
@@ -364,7 +371,6 @@ class DashboardDownloadsWidget extends ConsumerWidget {
       }
       return b.progress.compareTo(a.progress);
     });
-    final List<_DownloadRow> top = rows.take(3).toList();
 
     Widget body;
     if (rows.isEmpty && anyLoading) {
@@ -383,24 +389,21 @@ class DashboardDownloadsWidget extends ConsumerWidget {
     } else if (rows.isEmpty) {
       body = const DashboardIdleRow(text: 'Nothing downloading');
     } else {
-      body = Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          for (final _DownloadRow row in top) _ItemRow(row: row),
-          if (rows.length > top.length)
-            DashboardIdleRow(text: '+${rows.length - top.length} more'),
-        ],
+      body = DashboardDisclosure(
+        previewCount: 3,
+        itemCount: rows.length,
+        itemBuilder: (_, int index) => _ItemRow(row: rows[index]),
       );
     }
 
     return DashboardWidgetCard(
       kind: DashboardWidgetKind.downloads,
-      accent: cs.primary,
+      accent: cs.onSecondaryContainer,
       trailing: totalSpeed > 0
           ? DashboardPill(
               icon: Icons.arrow_downward_rounded,
               label: '${fmtBytes(totalSpeed)}/s',
-              color: cs.primary,
+              color: cs.onSecondaryContainer,
             )
           : null,
       child: body,
@@ -449,46 +452,72 @@ class _ItemRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme cs = theme.colorScheme;
-    return InkWell(
-      borderRadius: BorderRadius.circular(8),
-      onTap: () => context.go(
-        AtriumRoutes.servicePath(row.instance.kind.name, row.instance.id),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: Insets.xs),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: Text(
-                    row.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyMedium,
+    final double progress = row.progress.clamp(0.0, 1.0);
+    final bool reduceMotion = MediaQuery.disableAnimationsOf(context);
+    return Material(
+      color: cs.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(18),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => context.go(
+          AtriumRoutes.servicePath(row.instance.kind.name, row.instance.id),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(Insets.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Text(
+                      row.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: Insets.sm),
+                  if (progress >= 1)
+                    const Icon(Icons.check_circle_outline, semanticLabel: 'Complete')
+                  else
+                    Text(
+                      '${(progress * 100).toStringAsFixed(0)}%',
+                      style: theme.textTheme.labelLarge,
+                    ),
+                ],
+              ),
+              Text(
+                row.instance.kind.displayName,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+              if (progress < 1) ...<Widget>[
+                const SizedBox(height: Insets.sm),
+                TweenAnimationBuilder<double>(
+                  key: ValueKey<(String, String)>((row.instance.id, row.name)),
+                  tween: Tween<double>(end: progress),
+                  duration: reduceMotion
+                      ? Duration.zero
+                      : const Duration(milliseconds: 300),
+                  curve: Curves.easeOutCubic,
+                  builder: (BuildContext context, double value, Widget? child) =>
+                      LinearProgressIndicatorM3E(
+                    size: LinearProgressM3ESize.s,
+                    shape: row.moving && !reduceMotion
+                        ? ProgressM3EShape.wavy
+                        : ProgressM3EShape.flat,
+                    value: value,
+                    activeColor: cs.secondary,
+                    trackColor: cs.surfaceContainerHighest,
                   ),
                 ),
-                const SizedBox(width: Insets.sm),
-                Text(
-                  '${(row.progress * 100).toStringAsFixed(0)}%',
-                  style: theme.textTheme.labelSmall
-                      ?.copyWith(color: cs.onSurfaceVariant),
-                ),
               ],
-            ),
-            const SizedBox(height: 4),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicatorM3E(
-                size: LinearProgressM3ESize.s,
-                shape: ProgressM3EShape.flat,
-                value: row.progress,
-                activeColor: cs.primary,
-                trackColor: cs.surfaceContainerHighest,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

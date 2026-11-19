@@ -1,14 +1,16 @@
+import 'dart:async';
+
 import 'package:core_models/core_models.dart';
 import 'package:core_profile/core_profile.dart';
+import 'package:core_router/core_router.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:go_router/go_router.dart';
 import 'package:service_adguard_home/service_adguard_home.dart';
 import 'package:service_dashdot/service_dashdot.dart';
-import 'package:service_emby/service_emby.dart' as emby;
 import 'package:service_glances/service_glances.dart';
-import 'package:service_jellyfin/service_jellyfin.dart' as jf;
 import 'package:service_deluge/service_deluge.dart';
 import 'package:service_nzbget/service_nzbget.dart';
 import 'package:service_ombi/service_ombi.dart';
@@ -18,7 +20,6 @@ import 'package:service_sabnzbd/service_sabnzbd.dart';
 import 'package:service_seerr/service_seerr.dart';
 import 'package:service_sonarr/service_sonarr.dart';
 import 'package:service_speedtest_tracker/service_speedtest_tracker.dart';
-import 'package:service_tautulli/service_tautulli.dart';
 import 'package:service_tracearr/service_tracearr.dart';
 import 'package:service_rtorrent/service_rtorrent.dart';
 import 'package:service_transmission/service_transmission.dart';
@@ -28,9 +29,11 @@ import 'package:service_aria2/service_aria2.dart';
 import 'package:service_cleanuparr/service_cleanuparr.dart';
 import 'package:service_slskd/service_slskd.dart';
 
+import '../activity/activity_providers.dart';
 import '../health_providers.dart';
 import '../screens/calendar_screen.dart';
 import 'dashboard_layout.dart';
+import 'dashboard_widget_card.dart';
 import 'dashboard_widget_kind.dart';
 import 'widgets/adguard_home_widget.dart';
 import 'widgets/cleanuparr_widget.dart';
@@ -54,11 +57,27 @@ final StateProvider<bool> dashboardEditModeProvider =
 
 /// The dashboard widget board: at-a-glance cards in the user's saved order,
 /// with an inline edit mode for reordering and hiding.
-class DashboardBoard extends ConsumerWidget {
+class DashboardBoard extends ConsumerStatefulWidget {
   const DashboardBoard({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardBoard> createState() => _DashboardBoardState();
+}
+
+class _DashboardBoardState extends ConsumerState<DashboardBoard> {
+  static const List<DashboardWidgetKind> _summaryKinds = <DashboardWidgetKind>[
+    DashboardWidgetKind.streams,
+    DashboardWidgetKind.downloads,
+    DashboardWidgetKind.upcoming,
+  ];
+
+  final Map<DashboardWidgetKind, GlobalKey> _sectionKeys =
+      <DashboardWidgetKind, GlobalKey>{
+    for (final DashboardWidgetKind kind in _summaryKinds) kind: GlobalKey(),
+  };
+
+  @override
+  Widget build(BuildContext context) {
     final List<Instance> instances = ref.watch(activeInstancesProvider);
     final List<DashboardWidgetConfig> layout =
         ref.watch(dashboardLayoutProvider);
@@ -72,9 +91,7 @@ class DashboardBoard extends ConsumerWidget {
 
     final List<DashboardWidgetConfig> visible = <DashboardWidgetConfig>[
       for (final DashboardWidgetConfig c in layout)
-        if (c.enabled &&
-            _configured(c.kind, instances, wolDeviceCount: wolCount) &&
-            _hasLiveContent(ref, c.kind))
+        if (c.enabled && _configured(c.kind, instances, wolDeviceCount: wolCount))
           c,
     ];
 
@@ -85,6 +102,14 @@ class DashboardBoard extends ConsumerWidget {
         message: 'Use the customize button (top right) to add widgets.',
       );
     }
+
+    final Set<DashboardWidgetKind> visibleKinds = <DashboardWidgetKind>{
+      for (final DashboardWidgetConfig config in visible) config.kind,
+    };
+    final List<DashboardWidgetKind> summary = _summaryKinds
+        .where(visibleKinds.contains)
+        .toList();
+    final int offset = summary.isEmpty ? 0 : 1;
 
     return EasyRefresh(
       header: const ClassicHeader(
@@ -99,12 +124,39 @@ class DashboardBoard extends ConsumerWidget {
       onRefresh: () async => _refreshAll(ref, instances),
       child: ListView.separated(
         padding: Insets.page,
-        itemCount: visible.length,
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: visible.length + offset,
         separatorBuilder: (_, __) => const SizedBox(height: Insets.md),
-        itemBuilder: (BuildContext context, int index) => _KeepAliveWrapper(
-            child: _buildWidget(visible[index].kind, instances)),
+        itemBuilder: (BuildContext context, int index) {
+          if (offset == 1 && index == 0) {
+            return _DashboardSummary(kinds: summary, onTap: _focusSection);
+          }
+          final DashboardWidgetKind kind = visible[index - offset].kind;
+          return _KeepAliveWrapper(
+            key: _sectionKeys[kind] ?? ValueKey<DashboardWidgetKind>(kind),
+            child: _buildWidget(kind, instances),
+          );
+        },
       ),
     );
+  }
+
+  void _focusSection(DashboardWidgetKind kind) {
+    final BuildContext? target = _sectionKeys[kind]?.currentContext;
+    if (target != null) {
+      unawaited(Scrollable.ensureVisible(
+        target,
+        duration: MediaQuery.disableAnimationsOf(context)
+            ? Duration.zero
+            : const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+      ));
+    } else {
+      // A far-off section may not be mounted by the lazy list yet.
+      context.goNamed(kind == DashboardWidgetKind.upcoming
+          ? AtriumRoutes.calendarName
+          : AtriumRoutes.activityName);
+    }
   }
 
   /// Whether a widget has anything behind it to show.
@@ -122,19 +174,6 @@ class DashboardBoard extends ConsumerWidget {
       return wolDeviceCount > 0;
     }
     return instances.any((Instance i) => kind.serviceKinds.contains(i.kind));
-  }
-
-  /// Downloads and streams are activity-gated: they only appear on the board
-  /// while something is actually downloading / streaming, instead of sitting
-  /// there with an idle row. Every other widget shows whenever its service is
-  /// configured.
-  static bool _hasLiveContent(WidgetRef ref, DashboardWidgetKind kind) {
-    return switch (kind) {
-      DashboardWidgetKind.downloads =>
-        ref.watch(activeDownloadCountProvider) > 0,
-      DashboardWidgetKind.streams => ref.watch(activeStreamCountProvider) > 0,
-      _ => true,
-    };
   }
 
   static List<Instance> _byKind(List<Instance> instances, ServiceKind kind) {
@@ -166,11 +205,7 @@ class DashboardBoard extends ConsumerWidget {
           slskdInstances: _byKind(instances, ServiceKind.slskd),
         );
       case DashboardWidgetKind.streams:
-        return DashboardStreamsWidget(
-          tautulliInstances: _byKind(instances, ServiceKind.tautulli),
-          jellyfinInstances: _byKind(instances, ServiceKind.jellyfin),
-          embyInstances: _byKind(instances, ServiceKind.emby),
-        );
+        return const DashboardStreamsWidget();
       case DashboardWidgetKind.upcoming:
         return const DashboardUpcomingWidget();
       case DashboardWidgetKind.recentlyAdded:
@@ -225,6 +260,7 @@ class DashboardBoard extends ConsumerWidget {
 
   void _refreshAll(WidgetRef ref, List<Instance> instances) {
     ref.read(lastHealthRefreshProvider.notifier).markRefreshed();
+    refreshActivity(ref, streamsOnly: true);
     for (final Instance i in instances) {
       ref.invalidate(instanceHealthProvider(i.id));
       switch (i.kind) {
@@ -253,12 +289,6 @@ class DashboardBoard extends ConsumerWidget {
           ref.invalidate(rtorrentGlobalProvider(i));
         case ServiceKind.aria2:
           ref.invalidate(aria2SnapshotProvider(i));
-        case ServiceKind.tautulli:
-          ref.invalidate(tautulliActivityProvider(i));
-        case ServiceKind.jellyfin:
-          ref.invalidate(jf.jellyfinSessionsProvider(i));
-        case ServiceKind.emby:
-          ref.invalidate(emby.embySessionsProvider(i));
         case ServiceKind.seerr:
           ref.invalidate(seerrRequestCountsProvider(i));
           ref.invalidate(seerrRequestsProvider(i));
@@ -305,6 +335,93 @@ class DashboardBoard extends ConsumerWidget {
     for (final DateTime m in upcomingWindowMonths(DateTime.now())) {
       ref.invalidate(globalCalendarProvider((m, false)));
     }
+  }
+}
+
+class _DashboardSummary extends StatelessWidget {
+  const _DashboardSummary({required this.kinds, required this.onTap});
+
+  final List<DashboardWidgetKind> kinds;
+  final ValueChanged<DashboardWidgetKind> onTap;
+
+  @override
+  Widget build(BuildContext context) => Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          for (final (int index, DashboardWidgetKind kind) in kinds.indexed) ...<Widget>[
+            if (index > 0) const SizedBox(width: Insets.sm),
+            Expanded(child: _SummaryTile(kind: kind, onTap: () => onTap(kind))),
+          ],
+        ],
+      );
+}
+
+class _SummaryTile extends ConsumerWidget {
+  const _SummaryTile({required this.kind, required this.onTap});
+
+  final DashboardWidgetKind kind;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ThemeData theme = Theme.of(context);
+    final (String label, int? count) = switch (kind) {
+      DashboardWidgetKind.streams => (
+          'Streams',
+          ref.watch(activityStreamsProvider.select(
+            (ActivityStreamsState state) =>
+                state.streams.isEmpty && (state.anyLoading || state.errors.isNotEmpty)
+                    ? null
+                    : state.streams.length,
+          )),
+        ),
+      DashboardWidgetKind.downloads => ('Downloads', ref.watch(activeDownloadCountProvider)),
+      DashboardWidgetKind.upcoming => (
+          'Today',
+          ref.watch(dashboardUpcomingProvider.select(
+            (DashboardUpcomingState state) =>
+                state.todayCount == 0 && (state.loading || state.failed)
+                    ? null
+                    : state.todayCount,
+          )),
+        ),
+      _ => throw StateError('No summary for ${kind.name}'),
+    };
+    final (Color surface, Color ink) = dashboardSectionColors(theme.colorScheme, kind);
+    return Material(
+      color: surface,
+      borderRadius: const BorderRadiusDirectional.only(
+        topStart: Radius.circular(26),
+        topEnd: Radius.circular(18),
+        bottomStart: Radius.circular(18),
+        bottomEnd: Radius.circular(28),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(Insets.sm),
+          child: Column(
+            children: <Widget>[
+              Icon(kind.icon, color: ink, size: 19),
+              const SizedBox(height: Insets.xs),
+              Text(
+                count?.toString() ?? '—',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  color: ink,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.labelMedium?.copyWith(color: ink),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -364,7 +481,7 @@ class _EditBoard extends ConsumerWidget {
                         // reads as the button having failed. The tile says
                         // which service it wants instead.
                         trailing: IconButton(
-                          tooltip: DashboardBoard._configured(
+                          tooltip: _DashboardBoardState._configured(
                             c.kind,
                             instances,
                             wolDeviceCount: wolCount,
@@ -373,7 +490,7 @@ class _EditBoard extends ConsumerWidget {
                               : 'Needs something that can fill it',
                           icon: const Icon(Icons.add_circle_outline),
                           onPressed:
-                              DashboardBoard._configured(
+                              _DashboardBoardState._configured(
                             c.kind,
                             instances,
                             wolDeviceCount: wolCount,
@@ -460,7 +577,7 @@ class _EditTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme cs = theme.colorScheme;
-    final bool configured = DashboardBoard._configured(
+    final bool configured = _DashboardBoardState._configured(
       config.kind,
       instances,
       wolDeviceCount: wolDeviceCount,
@@ -515,7 +632,7 @@ class _EditTile extends StatelessWidget {
 class _KeepAliveWrapper extends StatefulWidget {
   final Widget child;
 
-  const _KeepAliveWrapper({required this.child});
+  const _KeepAliveWrapper({required this.child, super.key});
 
   @override
   State<_KeepAliveWrapper> createState() => _KeepAliveWrapperState();

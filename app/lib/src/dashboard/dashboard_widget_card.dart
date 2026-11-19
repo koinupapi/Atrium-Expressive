@@ -6,9 +6,8 @@ import 'dashboard_widget_kind.dart';
 /// Shared chrome for every dashboard widget: a single calm surface card with
 /// an accent-tinted icon badge, optional trailing pill/text, and the body.
 ///
-/// Every card uses the same neutral tone; colour is carried only by the icon
-/// badge and the body's own pills/chips/bars, so the board reads as one system
-/// and the artwork and data lead rather than competing tonal fills.
+/// Live sections share the same frame, with distinct tonal surfaces so the
+/// summary tiles and their matching sections are easy to recognise.
 class DashboardWidgetCard extends StatelessWidget {
   const DashboardWidgetCard({
     required this.kind,
@@ -31,9 +30,15 @@ class DashboardWidgetCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme cs = theme.colorScheme;
+    final (Color surface, Color ink) = dashboardSectionColors(cs, kind);
     return Material(
-      color: cs.surfaceContainerHigh,
-      borderRadius: BorderRadius.circular(28),
+      color: surface,
+      borderRadius: const BorderRadiusDirectional.only(
+        topStart: Radius.circular(28),
+        topEnd: Radius.circular(36),
+        bottomStart: Radius.circular(28),
+        bottomEnd: Radius.circular(22),
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -49,7 +54,7 @@ class DashboardWidgetCard extends StatelessWidget {
                     height: 44,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: accent.withValues(alpha: 0.16),
+                      color: accent.withValues(alpha: 0.13),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Icon(kind.icon, size: 24, color: accent),
@@ -58,9 +63,9 @@ class DashboardWidgetCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       kind.label,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: cs.onSurface,
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: ink,
                       ),
                     ),
                   ),
@@ -73,6 +78,72 @@ class DashboardWidgetCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Pairs the summary tile and main card, using the active wallpaper palette.
+(Color, Color) dashboardSectionColors(ColorScheme scheme, DashboardWidgetKind kind) =>
+    switch (kind) {
+      DashboardWidgetKind.streams =>
+        (scheme.primaryContainer, scheme.onPrimaryContainer),
+      DashboardWidgetKind.downloads =>
+        (scheme.secondaryContainer, scheme.onSecondaryContainer),
+      DashboardWidgetKind.upcoming =>
+        (scheme.tertiaryContainer, scheme.onTertiaryContainer),
+      _ => (scheme.surfaceContainerHigh, scheme.onSurface),
+    };
+
+/// Previews stay compact, with the full live list one tap away.
+class DashboardDisclosure extends StatefulWidget {
+  const DashboardDisclosure({
+    required this.previewCount,
+    required this.itemCount,
+    required this.itemBuilder,
+    super.key,
+  });
+
+  final int previewCount;
+  final int itemCount;
+  final IndexedWidgetBuilder itemBuilder;
+
+  @override
+  State<DashboardDisclosure> createState() => _DashboardDisclosureState();
+}
+
+class _DashboardDisclosureState extends State<DashboardDisclosure> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool canExpand = widget.itemCount > widget.previewCount;
+    final int visibleCount =
+        _expanded || !canExpand ? widget.itemCount : widget.previewCount;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        AnimatedSize(
+          alignment: Alignment.topCenter,
+          duration: MediaQuery.disableAnimationsOf(context)
+              ? Duration.zero
+              : const Duration(milliseconds: 260),
+          curve: Curves.easeOutCubic,
+          child: Column(
+            children: <Widget>[
+              for (int index = 0; index < visibleCount; index++) ...<Widget>[
+                widget.itemBuilder(context, index),
+                const SizedBox(height: Insets.xs),
+              ],
+            ],
+          ),
+        ),
+        if (canExpand)
+          TextButton.icon(
+            onPressed: () => setState(() => _expanded = !_expanded),
+            icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
+            label: Text(_expanded ? 'Show less' : 'View all ${widget.itemCount}'),
+          ),
+      ],
     );
   }
 }

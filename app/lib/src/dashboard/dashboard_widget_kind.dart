@@ -3,16 +3,16 @@ import 'package:flutter/material.dart';
 
 /// The widget types the dashboard board can show, in default display order.
 enum DashboardWidgetKind {
-  downloads,
   streams,
+  downloads,
   upcoming,
+  gluetunStatus,
   recentlyAdded,
   recentlyDownloaded,
   requests,
   serverInfo,
   dashdot,
   speedtestResults,
-  gluetunStatus,
   myspeed,
   adguardHome,
   wakeOnLan,
@@ -67,6 +67,7 @@ extension DashboardWidgetKindX on DashboardWidgetKind {
             ServiceKind.slskd,
           ],
         DashboardWidgetKind.streams => const <ServiceKind>[
+            ServiceKind.plex,
             ServiceKind.tautulli,
             ServiceKind.jellyfin,
             ServiceKind.emby,
